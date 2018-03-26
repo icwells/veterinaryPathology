@@ -3,11 +3,6 @@
 ### These scripts are meant for the use of the Maley lab, Biodesign Institute, Arizona State University
 ### Copyright 2018 by Shawn Rupp
 
-## Dependencies
-Python3 
-excelToText.py 
-Kestrel 
-
 ## Installation 
 ### Database Scripts
 	git clone https://github.com/icwells/veterinaryPathology.git 
