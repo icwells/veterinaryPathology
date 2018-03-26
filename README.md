@@ -9,13 +9,13 @@
 ### Kestrel 
 	git clone https://github.com/icwells/Kestrel.git 
 ### excelToText
-	git clone https://github.com/icwells/excelToText.git 
+	git clone https://github.com/icwells/unicodeTools.git 
 
 ## Usage 
 
 ### Converting the MSU databse to csv
 The MSU database had to be converted into a single csv in two steps. First, the directory of xlsx files were 
-converted into csv files using excelToText.py, located here: https://github.com/icwells/excelToText 
+converted into csv files using excelToText.py, located here: https://github.com/icwells/unicodeTools 
 
 Next the directory of csv records were merged into a single csv with the description lines appended to the 
 end of the individual records, resulting in one line per record.
