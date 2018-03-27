@@ -4,21 +4,19 @@ import os
 import re
 from argparse import ArgumentParser
 
+def getMatch(query, line):
+	# Searches line for regular expression
+	match = re.search(query, line)
+	if match:
+		return match.group(0)
+	else:
+		return "NA"
+
 def parseLine(age, sex, line):
 	# Extracts data from line
-	a = "NA"
-	s = "NA"
+	a = getMatch(age, line)
+	s = getMatch(sex, line)
 	d = "NA"
-	match = re.search(age, line)
-	if match:
-		print(line, match.group)
-		quit()
-	# Search for sex
-	splt = line.split()
-	for i in splt:
-		if re.search(sex, i) == True:
-			s = i
-			break
 	return ("{},{},{}").format(a, s, d)
 
 def getDescription(infile, outfile):
@@ -35,24 +33,18 @@ def getDescription(infile, outfile):
 		with open(infile, "r", errors="surrogateescape") as f:
 			for line in f:
 				total += 1
-				if first == False and line.strip():
-					try:
-						line = line.strip()
-						splt = line.split("\t")
-						print(line)
-						if len(splt) > 2:
-							# Compress all fields other than ID into one
-							splt[1] = " ".join(splt[1:])
-						# Skip entries with missing data
-						if splt[1] != "NA":
-							res = parseLine(age, sex, splt[1].lower())
-							if res:
-								found += 1
-								output.write(("{},{}\n").format(splt[0], res))
-					except UnicodeEncodeError:
-						pass
-				else:
-					first = True
+				if line.strip():
+					line = line.strip()
+					splt = line.split("\t")
+					if len(splt) > 2:
+						# Compress all fields other than ID into one
+						splt[1] = " ".join(splt[1:])
+					# Skip entries with missing data
+					if splt[1] != "NA":
+						res = parseLine(age, sex, splt[1].lower())
+						if res.count("NA") < 3:
+							found += 1
+							output.write(("{},{}\n").format(splt[0], res))
 	print(("\tFound data for {} of {} records.\n").format(found, total))
 
 def main():
