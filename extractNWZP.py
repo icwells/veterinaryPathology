@@ -23,6 +23,7 @@ def getDescription(infile, outfile):
 	# Reads input file and writes output to file
 	total = 0
 	found = 0
+	complete = 0
 	first = True
 	# Match digits, dash or space, term and any of: "s", dash or space, "old"
 	age = re.compile(r"[0-9]+(-|\s)(day|week|month|year)s?(-|\s)(old)?")
@@ -45,7 +46,10 @@ def getDescription(infile, outfile):
 						if res.count("NA") < 3:
 							found += 1
 							output.write(("{},{}\n").format(splt[0], res))
-	print(("\tFound data for {} of {} records.\n").format(found, total))
+							if res.count("NA") == 1:
+								complete += 1
+	print(("\tFound data for {} of {} records.").format(found, total))
+	print(("\tFound complete information for {} records.\n").format(complete))
 
 def main():
 	parser = ArgumentParser(description = "This script will extract \
