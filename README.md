@@ -27,3 +27,10 @@ Each taxonomy merging script functions the same way (replace the "..." with the 
 
 	python ...Taxonomy.py -i path_to_zepsDB -t path_to_kestrel_output -o output_file 
 
+The zooPathTaxonomy.py script has the additional -r parameter, which will incorporate the age, sex, and cancer type
+from the output of extractNWZP.py into the merged output file.
+
+### extractNWZP.py
+This script will extract age, sex, and cancer type (in progress) from the downloaded NWZP records.
+
+	python extractNWZP.py -i path_to_records_file -o path_to_output
