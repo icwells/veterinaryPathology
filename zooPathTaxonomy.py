@@ -2,9 +2,13 @@
 
 import argparse
 
-def formatFullData(taxa, line, r):
+def formatFullData(c, taxa, line, r):
 	# Formats line from fulldata file
 	row = []
+	if c == True:
+		if "8" not in line[8]:
+			# Skip non-cancer records
+			return None 
 	n = line[6].replace(",", " ")
 	if n in taxa.keys():
 		# Common and scientific names
@@ -18,9 +22,13 @@ def formatFullData(taxa, line, r):
 					line[7].replace(",",";"), line[5], line[1], line[2]])
 	return row
 
-def formatMasterFile(taxa, line, r):
+def formatMasterFile(c, taxa, line, r):
 	# Formats line from master file
 	row = []
+	if c == True:
+		if "8" not in line[6]:
+			# Skip non-cancer records
+			return None 
 	n = line[4].replace(",", " ")
 	if n in taxa.keys():
 		# ID, common, and scientific names
@@ -34,7 +42,7 @@ def formatMasterFile(taxa, line, r):
 					line[2], line[5], line[3], line[0], line[1]])
 	return row
 
-def sortDB(taxa, rec, infile, outfile):
+def sortDB(c, taxa, rec, infile, outfile):
 	# Sorts database and writes out relevant data with taxonomy
 	fd = True
 	first = True
@@ -50,12 +58,12 @@ def sortDB(taxa, rec, infile, outfile):
 					if len(line) > 7:
 						if rec:
 							if line[0] in rec.keys():
-								# Get age, sex, and type
+								# Get age, sex, location, and type
 								r = rec[line[0]]
 						if fd == True:
-							row = formatFullData(taxa, line, r)
+							row = formatFullData(c, taxa, line, r)
 						else:
-							row = formatMasterFile(taxa, line, r)
+							row = formatMasterFile(c, taxa, line, r)
 						if row:
 							output.write(",".join(row) + "\n")
 							count += 1
@@ -102,6 +110,8 @@ def getTaxa(infile):
 def main():
 	parser = argparse.ArgumentParser(description = "This script will concatenate \
 the NWZP database with Kestrel taxonomy results.")
+	parser.add_argument("--cancer", action = "store_true", default = False,
+help = "Only extracts and concatenates cancer records (extracts all records by default).")
 	parser.add_argument("-i", help = "Path to NWZP file.")
 	parser.add_argument("-t", help = "Path to taxonomy file.")
 	parser.add_argument("-r", default = None,
@@ -110,7 +120,7 @@ help = "Path to records file with age, sex, and cancer type (not required).")
 	args = parser.parse_args()
 	taxa = getTaxa(args.t)
 	rec = getRecords(args.r)
-	sortDB(taxa, rec, args.i, args.o)
+	sortDB(args.cancer, taxa, rec, args.i, args.o)
 
 if __name__ == "__main__":
 	main()
