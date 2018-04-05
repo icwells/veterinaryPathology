@@ -31,6 +31,6 @@ The zooPathTaxonomy.py script has the additional -r parameter, which will incorp
 from the output of extractNWZP.py into the merged output file.
 
 ### extractNWZP.py
-This script will extract age, sex, and cancer type (in progress) from the downloaded NWZP records.
+This script will extract age, sex, and cancer type and location from the downloaded NWZP records.
 
 	python extractNWZP.py -i path_to_records_file -o path_to_output

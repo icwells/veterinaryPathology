@@ -45,7 +45,7 @@ def sortDB(taxa, rec, infile, outfile):
 			for line in f:
 				total += 1
 				if first == False:
-					r = ["NA","NA","NA"]
+					r = ["NA","NA","NA","NA"]
 					line = line.strip().split("\t")
 					if len(line) > 7:
 						if rec:
@@ -61,7 +61,7 @@ def sortDB(taxa, rec, infile, outfile):
 							count += 1
 				else:
 					output.write("ID,CommonName,ScientificName,Kingdom,Phylum,Order,Class,Family,Genus,\
-Age,Sex,CancerType,Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
+Age(months),Sex,Location,CancerType,Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
 					if len(line.split(",")) == 9:
 						# Sort data from masterfile instead of fulldata
 						fd = False

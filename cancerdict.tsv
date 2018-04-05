@@ -1,0 +1,41 @@
+Location	N/A	(?i)N/A
+Location	abdomen	(?i)abdomen:(?i)abdom.*:(?i)omentum:(?i)diaphragm
+Location	bile duct	(?i)bile.*
+Location	bone	(?i)sacrum:(?i)bone.*
+Location	brain	(?i)brain
+Location	adrenal	(?i)adrenal
+Location	bladder	(?i)bladder
+Location	breast	(?i)breast
+Location	colon	(?i)colon:(?i)rectum
+Location	duodenum	(?i)duodenum
+Location	fat	(?i)fat:(?i)adipose.*
+Location	heart	(?i)heart
+Location	kidney	(?i)kidney.*:(?i)ureter
+Location	leukemia	(?i)leukemia
+Location	liver	(?i)hepa.*:(?i)liver.*:(?i)hep.*:(?i)billia.*
+Location	lung	(?i)lung.*:(?i)pulm.*:(?i)mediasti.*
+Location	lymph	(?i)lymph:(?i)lymph node
+Location	muscle	(?i)muscle:(?i).*structure.*
+Location	nerve	(?i)nerve.*
+Location	other	(?i)gland:(?i)basal.*:(?i)islet:(?i)multifocal:(?i)neck:(?i)nasal:(?i)neuroendo.*
+Location	oral	(?i)oral:(?i)tongue:(?i)mouth:(?i)lip:(?i)palate
+Location	ovary	(?i)ovary
+Location	pancreas	(?i)pancreas.*
+Location	seminal vesicle	(?i)seminal vesicle
+Location	skin	(?i)skin:(?i)eyelid
+Location	spinal cord	(?i)spinal cord
+Location	spleen	(?i)spleen
+Location	testis	(?i)testis
+Location	thyroid	(?i)thyroid
+Location	uterus	(?i)uterus
+Location	vulva	(?i)vulva:(?i)vagina
+Location	widespread	(?i)widespread:(?i)metastatic:(?i)body as a whole:(?i)multiple:(?i)disseminated
+Type	N/A	(?i)N/A
+Type	adenocarcinoma	(?i)adenocarcinoma
+Type	adenoma	(?i)adenoma
+Type	carcinoma	(?i)carcinoma:(?i)TCC
+Type	lymphoma	(?i)lymphoma(?i)lymphosarcoma
+Type	leukemia	(?i)leukemia
+Type	neoplasia	(?i)neoplasia:(?i)neoplasm:(?i)tumor
+Type	polyp	(?i)polyp
+Type	sarcoma	(?i)sarcoma
