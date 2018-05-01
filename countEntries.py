@@ -12,7 +12,7 @@ def countUnique(infile, col):
 			if first == False:
 				total += 1
 				spli = line.split(delim)
-				if len(spli) >= col:
+				if len(spli) > col:
 					x.add(spli[col])
 			else:
 				first = False
