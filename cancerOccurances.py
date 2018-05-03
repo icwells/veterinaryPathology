@@ -4,12 +4,19 @@ from datetime import datetime
 from argparse import ArgumentParser
 from copy import deepcopy
 
+def getPercent(count, total):
+	# Returns formatted percentage if possible
+	if count and total:
+		if count != "NA" and total != "NA":
+			return ("{:.1%}").format(count/total)
+	return "NA"
+
 def extendOutput(o, d, n):
 	# Extends output list if n is in d.keys()
 	if n in d.keys():
-		o.extend([d[n]["c"], d[n]["o"]])
+		o.extend([d[n]["c"], d[n]["o"], getPercent(d[n]["c"], d[n]["o"])])
 	else:
-		o.extend(["NA", "NA"])
+		o.extend(["NA", "NA", "NA"])
 	return o
 
 def addDicts(total, d):
@@ -32,9 +39,10 @@ def mergeOccurances(outfile, nwzp, zeps, msu):
 	countOccurances(total)
 	print("\n\tWriting output...")
 	with open(outfile, "w") as output:
-		output.write("Species,TotalCancer,TotalOther,NWZPCancer,NWZPOther,ZEPSCancer,ZepsOther,MSUCancer,MSUOther\n")
+		output.write("Species,TotalCancer,TotalOther,Total%,NWZPCancer,NWZPOther,\
+NWZP%,ZEPSCancer,ZepsOther,Zeps%,MSUCancer,MSUOther,MSU%\n")
 		for i in total.keys():
-			o = [i, total[i]["c"], total[i]["o"]]
+			o = [i, total[i]["c"], total[i]["o"], getPercent(total[i]["c"], total[i])]
 			for d in [nwzp, zeps, msu]:
 				o = extendOutput(o, d, i)
 			string = [str(x) for x in o]
