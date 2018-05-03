@@ -43,7 +43,7 @@ def sortDB(c, taxa, rec, infile, outfile):
 						output.write(",".join(row) + "\n")
 						count += 1
 				else:
-					output.write("ID,CommonName,ScientificName,Kingdom,Phylum,Order,Class,Family,Genus,\
+					output.write("ID,CommonName,ScientificName,Kingdom,Phylum,Class,Order,Family,Genus,\
 Age(months),Sex,Location,CancerType,Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
 					first = False
 	print(("\n\tFound taxonomies for {} of {} entries.\n").format(count, total))

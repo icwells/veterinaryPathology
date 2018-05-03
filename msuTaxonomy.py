@@ -23,7 +23,7 @@ def sortDB(taxa, infile, outfile):
 								count += 1
 				else:
 					output.write("ID,Date,Owner,Name,Species,Breed,ScientificName,\
-Kingdom,Phylum,Order,Class,Family,Genus,Days,Age,Sex,Diagnosis\n")
+Kingdom,Phylum,Class,Order,Family,Genus,Days,Age,Sex,Diagnosis\n")
 					delim = ","
 					if "\t" in line:
 						delim = "\t"
