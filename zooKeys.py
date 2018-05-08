@@ -73,11 +73,14 @@ def main():
 	parser.add_argument("-o", help = "Path to output file.")
 	args = parser.parse_args()
 	if args.k:
+		print(("\n\tInserting keys into {}...").format(args.o))
 		keys = readKeys(args.k)
 		insertKeys(keys, args.i, args.o)
 	else:
+		print("\n\tGenerating keys for {}...").format(args.i))
 		zoos = getAccounts(args.i)
 		getKeys(zoos, args.o)
+	print("\tFinished\n")
 
 if __name__ == "__main__":
 	main()
