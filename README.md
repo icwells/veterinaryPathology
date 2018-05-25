@@ -35,3 +35,17 @@ The zooPathTaxonomy.py script has two additional parameters:
 This script will extract age, sex, and cancer type and location from the downloaded NWZP records.
 
 	python extractNWZP.py -i path_to_records_file -o path_to_output
+
+### getEntries.py
+This script can be used to count the number of unique entries found in a given column of a file, extract values from a given column, or identify multiple entries.
+
+	-h, --help	show this help message and exit
+	-c C		Column number to analyze.
+	-v V		Value from column c to extract (leave blank to count).
+	--multiple	Writes entries with multiple occurances from column c to output
+					file (will append to existing output file).
+	--empty		Writes entries with no entry in column c to output file (will
+					append to existing output file).
+	-i I		Path to input file.
+	-o O		Path to output file (not required for counting). 
+
