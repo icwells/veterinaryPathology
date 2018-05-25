@@ -1,6 +1,7 @@
-'''This script can be used to count the number of unique entries found in a given column 
-of a file or to extract values from a given column.'''
+'''This script can be used to count the number of unique entries found in a given 
+column of a file, extract values from a given column, or identify multiple entries.'''
 
+import os
 from argparse import ArgumentParser
 
 def getDelim(line):
@@ -48,18 +49,100 @@ def countUnique(infile, col):
 				delim = getDelim(line)
 	return x, total
 
+def getTarget(infile, outfile, col, target=None):
+	# Write entries from col with values in target to file (writes lines with no entry is target is null)
+	total = 0
+	count = 0
+	first = True
+	with open(outfile, "a") as out:
+		with open(infile, "r") as f:
+			for line in f:
+				if first == False:
+					write = False
+					total += 1
+					spli = line.strip().split(delim)
+					if len(spli) >= col:
+						n = spli[col]
+						if target and n in target:
+							# Write line if value is in target
+							write = True
+						elif len(n) < 1:
+							# Write line with missing entry
+							write = True
+						if write == True:
+							out.write(line)
+							count += 1
+				else:
+					delim = getDelim(line)
+					first = False
+	return count, total
+
+def identifyMultiples(infile, col):
+	# Returns a lsit of non-unique col entries
+	entries = {}
+	mult = []
+	first = True
+	with open(infile, "r") as f:
+		for line in f:
+			if first == False:
+				spli = line.strip().split(delim)
+				if len(spli) >= col:
+					# Count entry occurances
+					if spli[col] in entries.keys():
+						entries[spli[col]] += 1
+					else:
+						entries[spli[col]] = 1
+			else:
+				delim = getDelim(line)
+				first = False
+	for i in entries.keys():
+		if entries[i] > 1:
+			# Get multiple occurances
+			mult.append(i)
+	return mult
+
+def checkArgs(args):
+	# Identifies errors in arguments
+	if not args.i:
+		print("\n\t[Error] Please provide and input file. Exiting.\n")
+		quit()
+	if args.c == -1:
+		args.c = input("\n\tPlease enter column number: ")
+	if args.multiple == True or args.empty == True:
+		if args.v:
+			print("\n\t[Warning] Ignoring -v argument.\n")
+		if not os.path.isfile(args.o):
+			# Initialize output file with header
+			with open(args.o, "w") as out:
+				with open(args.i, "r") as f:
+					head = f.readline()
+				out.write(head)
+
 def main():
 	parser = ArgumentParser("This script can be used to count the number of \
-unique entries found in a given column of a file or to extract values from a given column.")
+unique entries found in a given column of a file, extract values from a given column, or identify multiple entries.")
 	parser.add_argument("-c", type = int, default = -1,
 help = "Column  number to analyze.")
 	parser.add_argument("-v", help = "Value from column c to extract (leave blank to count).")
+	parser.add_argument("--multiple", action = "store_true", default = False,
+help = "Writes entries with multiple occurances from column c to output file (will append to existing output file).")
+	parser.add_argument("--empty", action = "store_true", default = False,
+help = "Writes entries with no entry in column c to output file (will append to existing output file).")
 	parser.add_argument("-i", help = "Path to input file.")
-	parser.add_argument("-o", help = "Path to output file (if extracting).")
+	parser.add_argument("-o", help = "Path to output file (not required for counting).")
 	args = parser.parse_args()
-	if args.c == -1:
-		args.c = input("\n\tPlease enter column number: ")
-	if args.v:
+	checkArgs(args)
+	if args.multiple or args.empty:
+		if args.multiple == True:
+			print(("\n\tIdentifying multiple entries from column {}...").format(args.c))
+			target = identifyMultiples(args.i, args.c)
+			x, t = getTarget(args.i, args.o, args.c, target)
+			print(("\n\tIdentified {} multiple entries from {} total entries.\n").format(x, t))
+		elif args.empty == True:
+			print(("\n\tIdentifying null entries from column {}...").format(args.c))
+			x, t = getTarget(args.i, args.o, args.c)
+			print(("\n\tIdentified {} entries with missing values from {} total entries.\n").format(x, t))
+	elif args.v:
 		print(("\n\tExtracting entries with column {} equal to {}...").format(args.c, args.v))
 		x, t = extractLines(args.i, args.o, args.c, args.v)
 		print(("\tExtracted {} entries from {} total entries.\n").format(x, t))

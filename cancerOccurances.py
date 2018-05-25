@@ -39,10 +39,10 @@ def mergeOccurances(outfile, nwzp, zeps, msu):
 	countOccurances(total)
 	print("\n\tWriting output...")
 	with open(outfile, "w") as output:
-		output.write("Species,TotalCancer,TotalOther,Total%,NWZPCancer,NWZPOther,\
-NWZP%,ZEPSCancer,ZepsOther,Zeps%,MSUCancer,MSUOther,MSU%\n")
+		output.write("Species,Totalcancer,Totalother,Total%,NWZPcancer,NWZPother,\
+NWZP%,ZEPScancer,ZEPSother,ZEPS%,MSUcancer,MSUother,MSU%\n")
 		for i in total.keys():
-			o = [i, total[i]["c"], total[i]["o"], getPercent(total[i]["c"], total[i])]
+			o = [i, total[i]["c"], total[i]["o"], getPercent(total[i]["c"], total[i]["o"])]
 			for d in [nwzp, zeps, msu]:
 				o = extendOutput(o, d, i)
 			string = [str(x) for x in o]
@@ -99,19 +99,39 @@ def getOccurances(infile, diag=False):
 		countOccurances(species)		
 	return species
 
+def getZEPSoccurances(infile):
+	# Reads Drury/ZEPS species count data
+	species = {}
+	first = True
+	with open(infile, "r") as f:
+		for line in f:
+			spli = line.strip().split(",")
+			if first == False:
+				if len(spli) >= col:
+					n = spli[col]
+					if n != "NA":
+						species[n] = {"c":int(spli[1]), "o":int(spli[2])}
+			else:
+				for idx,i in enumerate(spli):
+					if i.strip() == "ScientificName":
+						col = idx
+						break
+				first = False
+	return species
+
 def main():
 	start = datetime.now()
 	parser = ArgumentParser("This script will count the number of cancer \
 occurances per species and per database.")
 	parser.add_argument("-n", help = "Path to NWZP file.")
 	parser.add_argument("-m", help = "Path to merged MSU file.")
-	parser.add_argument("-z", help = "Path to ZEPS file.")
+	parser.add_argument("-z", help = "Path to ZEPS species count file (with scientific names).")
 	parser.add_argument("-o", help = "Path to output file.")
 	args = parser.parse_args()
 	print("\n\tGetting NWZP data...")
 	nwzp = getOccurances(args.n, True)
 	print("\n\tGetting ZEPS data...")
-	zeps = getOccurances(args.z)
+	zeps = getZEPSoccurances(args.z)
 	print("\n\tGetting MSU data...")
 	msu = getOccurances(args.m)
 	mergeOccurances(args.o, nwzp, zeps, msu)
