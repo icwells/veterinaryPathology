@@ -6,11 +6,13 @@ from argparse import ArgumentParser
 
 def getColumns(head):
 	# Returns dict of column numbers
-	col = {"pid":-1,"cid":-1,"account":-1,"id":-1}
+	col = {"name":-1,"pid":-1,"cid":-1,"account":-1,"id":-1}
 	for idx,i in enumerate(head):
 		i = i.strip().lower
 		if i == "patient":
 			col["pid"] = idx
+		elif i == "pt_name":
+			col["name"] = idx
 		elif i == "caseid":
 			col["cid"] = idx
 		elif i == "account":
@@ -40,7 +42,7 @@ def getRepeats(infile):
 		for line in f:
 			if first == False:
 				spli = line.split(delim)
-					
+				
 
 			else:
 				first = False

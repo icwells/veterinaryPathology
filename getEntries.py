@@ -22,8 +22,7 @@ def findMatch(c, val):
 		for i in s:
 			if i == val:
 				return True
-	return False
-	
+	return False	
 
 def extractLines(infile, outfile, col, val):
 	# Counts unique entries in col
