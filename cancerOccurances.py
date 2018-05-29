@@ -11,8 +11,6 @@ def getPercent(count, total):
 	else:
 		if type(count) == int and type(total) == int:
 			percent = float(count)/total
-			if percent <= 0.0:
-				print(count, total, percent)
 			return ("{:.1%}").format(percent)
 
 def extendOutput(o, d, n):
