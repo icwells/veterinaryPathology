@@ -12,6 +12,19 @@ def getDelim(line):
 	print("\n\t[Error] Cannot determine delimeter. Check file formatting. Exiting.\n")
 	quit()
 
+def findMatch(c, val):
+	# Identifies whole word matches
+	if c == val:
+		return True
+	else:
+		# Attwmpt to isolate match
+		s = c.split()
+		for i in s:
+			if i == val:
+				return True
+	return False
+	
+
 def extractLines(infile, outfile, col, val):
 	# Counts unique entries in col
 	x = 0
@@ -23,9 +36,11 @@ def extractLines(infile, outfile, col, val):
 				if first == False:
 					total += 1
 					spli = line.split(delim)
-					if len(spli) > col and spli[col].strip() == val:
-						output.write(line)
-						x += 1
+					if len(spli) > col:
+						match = findMatch(spli[col].strip(), val)
+						if match == True:
+							output.write(line)
+							x += 1
 				else:
 					output.write(line)
 					first = False
