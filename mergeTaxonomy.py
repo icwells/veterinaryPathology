@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 def printTotal(count, total):
 	# Prints number of taxonomies found
-	print(("\tFound taxonomies for {} of {} entries.\n").format(count, total))
+	print(("\tFound taxonomies for {} of {} entries.").format(count, total))
 
 def formatRow(c, taxa, line, r):
 	# Formats line from fulldata file
