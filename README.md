@@ -22,14 +22,20 @@ end of the individual records, resulting in one line per record.
 
 	python msuDB.py -i path_to_directory -o path_to_output_file
 
-### Taxonomy Merging Scripts
-Each taxonomy merging script functions the same way (replace the "..." with the name of the specific script):
+### mergeTaxonomy.py
+The original taxonomy merging scripts were placed into one script to keep things organized (they can still be 
+found in the databaseSpecific folder for the time being).
 
-	python ...Taxonomy.py -i path_to_zepsDB -t path_to_kestrel_output -o output_file 
+	python mergeTaxonomy.py -n/m/z path_to_DB -t path_to_kestrel_output -o output_file 
 
-The zooPathTaxonomy.py script has two additional parameters: 
-"-r" incorporates the age, sex, and cancer type from the output of extractNWZP.py into the merged output file. 
-"--cancer" will tell the script to print only cancer records to file. 
+	-h, --help	show this help message and exit 
+	--cancer	Only extracts and concatenates cancer records (NWZP only; extracts all records by default). 
+	-n N		Path to NWZP file (utf-8 encoded). 
+	-m M		Path to MSU file (utf-8 encoded). 
+	-z Z		Path to ZEPS file (utf-8 encoded). 
+	-t T		Path to taxonomy file. 
+	-r R		Path to records file with age, sex, and cancer type (NWZP only; not required). 
+	-o O		Output file.  
 
 ### extractNWZP.py
 This script will extract age, sex, and cancer type and location from the downloaded NWZP records.
