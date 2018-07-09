@@ -1,0 +1,41 @@
+Location	N/A	(?i)N/A	
+Location	abdomen	(?i)abdomen|abdom.*|omentum|diaphragm	
+Location	bile duct	(?i)bile.*	
+Location	bone	(?i)sacrum|bone.*	
+Location	brain	(?i)brain	
+Location	adrenal	(?i)adrenal	
+Location	bladder	(?i)bladder	
+Location	breast	(?i)(breast|mammary)	
+Location	colon	(?i)colon|rectum	
+Location	duodenum	(?i)duodenum	
+Location	fat	(?i)fat|adipose.*	
+Location	heart	(?i)heart	
+Location	kidney	(?i)kidney.*|ureter	
+Location	leukemia	(?i)leukemia	
+Location	liver	(?i)hepa.*|liver.*|hep.*|billia.*	
+Location	lung	(?i)lung.*|pulm.*|mediasti.*	
+Location	lymph	(?i)lymph|lymph	node
+Location	muscle	(?i)muscle|.*structure.*	
+Location	nerve	(?i)nerve.*	
+Location	other	(?i)gland|basal.*|islet|multifocal|neck|nasal|neuroendo.*	
+Location	oral	(?i)oral|tongue|mouth|lip|palate	
+Location	ovary	(?i)ovary|ovarian	
+Location	pancreas	(?i)pancreas.*	
+Location	seminal vesicle	(?i)seminal	vesicle
+Location	skin	(?i)skin|eyelid	
+Location	spinal cord	(?i)spinal	cord
+Location	spleen	(?i)spleen	
+Location	testis	(?i)testi.*	
+Location	thyroid	(?i)thyroid	
+Location	uterus	(?i)uter(us|ine)	
+Location	vulva	(?i)vulva|vagina	
+Location	widespread	(?i)widespread|metastatic|(body as a whole)|multiple|disseminated	
+Type	N/A	(?i)N/A	
+Type	adenocarcinoma	(?i)adenocarcinoma	
+Type	adenoma	(?i)adenoma	
+Type	carcinoma	(?i)carcinoma|TCC	
+Type	lymphoma	(?i)lymphomalymphosarcoma	
+Type	leukemia	(?i)leukemia	
+Type	neoplasia	(?i)neoplasia|neoplasm|tumor	
+Type	polyp	(?i)polyp	
+Type	sarcoma	(?i)sarcoma	
