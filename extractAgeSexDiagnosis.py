@@ -41,10 +41,11 @@ def infantRecords(line):
 				ret = True
 	return ret
 
-def parseLine(loc, typ, age, sex, digit, line):
+def parseLine(loc, typ, age, sex, digit, nec, line):
 	# Extracts data from line
 	l = "NA"
 	t = "NA"
+	n = "N"
 	if infantRecords(line) == True:
 		# Remove neonatal/infant records
 		return None
@@ -65,7 +66,10 @@ def parseLine(loc, typ, age, sex, digit, line):
 		if x != "NA":
 			t = i
 			break
-	return ("{},{},{},{}").format(a, s, l, t)
+	necropsy = getMatch(nec, line)
+	if necropsy != "NA":
+		n = "Y"
+	return ("{},{},{},{},{}").format(a, s, l, t, n)
 
 def getDelim(line):
 	# Returns delimiter
@@ -86,9 +90,10 @@ def getDescription(loc, typ, c, infile, outfile):
 	age = re.compile(r"[0-9]+(-|\s)(day|week|month|year)s?(-|\s)(old)?")
 	sex = re.compile(r"(fe)?male")
 	digit = re.compile(r"[0-9]+")
+	nec = re.compile(r"necropsy|decesed|cause of death")
 	print(("\n\tExtracting data from {}...").format(infile))
 	with open(outfile, "w") as output:
-		output.write("ID,Age(months),Sex,Location,Type\n")
+		output.write("ID,Age(months),Sex,Location,Type,Necropsy\n")
 		with open(infile, "r") as f:
 			for line in f:
 				if first == False:
@@ -103,7 +108,7 @@ def getDescription(loc, typ, c, infile, outfile):
 							row = " ".join(splt)
 							# Skip entries with missing data
 							if row != "NA":
-								res = parseLine(loc, typ, age, sex, digit, row.lower())
+								res = parseLine(loc, typ, age, sex, digit, nec, row.lower())
 								if not res:
 									excluded += 1
 								elif res.count("NA") < 3:
@@ -116,7 +121,7 @@ def getDescription(loc, typ, c, infile, outfile):
 					first = False
 	print(("\tFound data for {} of {} records.").format(found, total))
 	print(("\tFound complete information for {} records.").format(complete))
-	print(("\tExcluded {} records to account for infant mortaility.\n").format(excluded))
+	print(("\tExcluded {} records to account for infant mortality.\n").format(excluded))
 
 def getTypes():
 	# Returns dicts of cancer type and loction

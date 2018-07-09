@@ -39,7 +39,7 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 			for line in f:
 				total += 1
 				if first == False:
-					r = ["NA","NA","NA","NA"]
+					r = ["NA","NA","NA","NA","NA"]
 					line = line.strip().split("\t")
 					if len(line) >= 6:
 						if rec:
@@ -52,7 +52,7 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 							count += 1
 				else:
 					output.write("ID,CommonName,ScientificName,Kingdom,Phylum,Class,Order,Family,Genus,\
-Age(months),Sex,Location,CancerType,Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
+Age(months),Sex,Location,CancerType,Necropsy,Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
 					first = False
 	printTotal(count, total)
 
