@@ -15,7 +15,7 @@ def formatRow(c, taxa, line, r):
 		if "8" not in line[8]:
 			# Skip non-cancer records
 			return None 
-	n = line[6].replace(",", " ")
+	n = line[6]
 	if n in taxa.keys():
 		# Common and scientific names
 		row = [line[0], n, taxa[n][-1]]
@@ -40,8 +40,8 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 				total += 1
 				if first == False:
 					r = ["NA","NA","NA","NA","NA"]
-					line = line.strip().split("\t")
-					if len(line) >= 6:
+					line = line.strip().split(",")
+					if len(line) >= 7:
 						if rec:
 							if line[0] in rec.keys():
 								# Get age, sex, location, and type
@@ -96,7 +96,6 @@ def sortMSU(taxa, infile, outfile):
 			for line in f:
 				total += 1
 				if first == False:
-					line = line.replace(",", "")
 					line = line.strip().split(delim)
 					if len(line) >= 6:
 						n = line[5]

@@ -44,12 +44,14 @@ class Sorter():
 		# Removes non-unique repeats
 		for k in self.IDs.keys():
 			for p in self.IDs[k].keys():
-				for i in self.IDs[k][p].keys():
-					if len(self.IDs[k][p][i]) <= 1:
-						del self.IDs[k][p][i]
-					else:
-						self.IDs[k][p][i] = list(self.IDs[k][p][i])
-						self.Total += len(self.IDs[k][p][i])
+				keys = list(self.IDs[k][p].keys())
+				for i in keys:
+					if i in self.IDs[k][p].keys():
+						if len(self.IDs[k][p][i]) <= 1:
+							del self.IDs[k][p][i]
+						else:
+							self.IDs[k][p][i] = list(self.IDs[k][p][i])
+							self.Total += len(self.IDs[k][p][i])
 
 	def GetMatch(self, pid, date, patient, client):
 		# Returns true if client and patient match, and date in u
