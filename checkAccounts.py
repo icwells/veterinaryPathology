@@ -1,8 +1,10 @@
-'''This script will remove lines from a for for given accounts.'''
+'''This script will extract/replace/remove lines from a file for given accounts.'''
 
 import os
 from argparse import ArgumentParser
 from fuzzywuzzy import fuzz
+from string import punctuation, digits
+from re import sub
 
 MIN = 0.95
 
@@ -28,6 +30,90 @@ def getAccountColumn(line, d):
 			return idx
 	print("\n\t[Error] Cannot find account column. Exiting.\n")
 	quit()
+
+#-----------------------------------------------------------------------------
+
+def writeAccounts(outfile, accounts):
+	# Write dict to file
+	with open(outfile, "w") as out:
+		out.write("OriginalName,CorrectedName\n")
+		for t in accounts.keys():
+			for j in accounts[t]:
+				out.write(",".join([j,t]) + "\n")
+
+def checkNA(term):
+	# Check for nonsense values
+	if term == "None":
+		return "NA"
+	if "Billing" in term or "Report" in term or "No " in term:
+		return "NA"
+	return term
+
+def formatName(query):
+	# Check query format
+	# Replace multiple spaces
+	term = sub(r" +", " ", query)
+	for i in punctuation:
+		if i != "." and i != "&":
+			if i in term:
+				term = term.replace(i, "")
+	# Store in title case
+	term = term.title()
+	term = checkNA(term)
+	if type(term) != str:
+		term = "NA"
+	elif term != "NA":
+		if " Hosp" in term:
+			idx = term.index(" Hosp")
+			if idx + len(" Hosp") == len(term) or term[idx + len(" Hosp")] == " ":
+				term = term.replace(" Hosp", " Hospital")
+		elif " Anim" in term:
+			term = term.replace(" Anim", " Animal")
+		elif " A.C." in term or " A. C." in term:
+			term = term.replace(" A.C.", " Animal Clinic").replace(" A. C.", " Animal Clinic")
+		elif " A.H." in term or " A. H." in term:
+			term = term.replace(" A.H.", " Animal Hospital").replace(" A. H.", " Animal Hospital")
+		elif " V.C." in term or " V. C." in term:
+			term = term.replace(" V.C.", " Veterinary Clinic").replace(" V. C.", " Veterinary Clinic")
+		elif " V.H." in term or " V. H." in term:
+			term = term.replace(" V.H.", " Veterinary Hospital").replace(" V. H.", " Veterinary Hospital")
+		elif " V.S." in term or " V. S." in term:
+			term = term.replace(" V.S.", " Veterinary Services").replace(" V. S.", " Veterinary Services")
+	return term
+
+def sortAccounts(acc):
+	# Attempts to resolve misspellings and formatting errors
+	accounts = {}
+	for i in acc:
+		term = formatName(i)
+		if term in accounts:
+			accounts[term].append(i)
+		else:
+			accounts[term] = [i]
+	print(("\tIdentified {} formatted names {} total names.\n").format(len(accounts.keys()), len(acc)))
+	return accounts
+
+def extractAccounts(infile):
+	# Extracts account names from input file
+	first = True
+	total = 0
+	accounts = set()
+	with open(infile, "r") as f:
+		for line in f:
+			if first == False:
+				total += 1
+				n = line.split(d)[c].strip()
+				if len(n) >= 4:
+					accounts.add(n)
+			else:
+				# Get info from header
+				d = getDelim(line)
+				c = getAccountColumn(line, d)
+				first = False
+	print(("\tExtracted {} unique names from {} entries.").format(len(accounts), total))
+	return list(accounts)
+
+#-----------------------------------------------------------------------------
 
 def editLine(line, accounts, c, d):
 	# Replaces account and returns line
@@ -118,8 +204,7 @@ def checkArgs(args):
 		quit()
 
 def main():
-	parser = ArgumentParser("This script can be used to count the number of \
-unique entries found in a given column of a file, extract values from a given column, or identify multiple entries.")
+	parser = ArgumentParser("This script will extract/replace/remove lines from a file for given accounts.")
 	parser.add_argument("-r", help = "Accounts to be removed (either a text file or a comma seperated string).")
 	parser.add_argument("-a", help = "Path to file containing corrected account names to replace existing names.")
 	parser.add_argument("-i", help = "Path to input file.")
@@ -128,7 +213,9 @@ unique entries found in a given column of a file, extract values from a given co
 	checkArgs(args)
 	if args.o:
 		print(("\n\tExtracting accounts from {}").format(args.i))
-		extractAccounts(args.i, args.o)
+		acc = extractAccounts(args.i)
+		accounts = sortAccounts(acc)
+		writeAccounts(args.o, accounts)
 	elif args.a:
 		print(("\n\tEditing accounts in {}").format(args.i))
 		accounts = getAccounts(args.a)
