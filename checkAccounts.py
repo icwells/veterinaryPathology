@@ -1,6 +1,7 @@
 '''This script will extract/replace/remove lines from a file for given accounts.'''
 
 import os
+from datetime import datetime
 from argparse import ArgumentParser
 from fuzzywuzzy import fuzz
 from string import punctuation, digits
@@ -37,52 +38,103 @@ def writeAccounts(outfile, accounts):
 	# Write dict to file
 	with open(outfile, "w") as out:
 		out.write("OriginalName,CorrectedName\n")
-		for t in accounts.keys():
-			for j in accounts[t]:
-				out.write(",".join([j,t]) + "\n")
+		for i in accounts.keys():
+			for j in accounts[i]:
+				out.write(",".join([j,i]) + "\n")
 
-def checkNA(term):
-	# Check for nonsense values
-	if term == "None":
-		return "NA"
-	if "Billing" in term or "Report" in term or "No " in term:
-		return "NA"
-	return term
+def sortAccounts(accounts):
+	# Uses fuzzy matching to resolve misspellings
+	count = 1
+	ret = {}
+	keys = list(accounts.keys())
+	for idx, k in enumerate(keys):
+		if k != "NA":
+			high = 0.0
+			match = ""
+			for i in keys[idx+1:]:
+				score = fuzz.ratio(i, k)
+				if score > high:
+					high = score
+					match = i
+			if high >= 0.95:
+				count += 1
+				'''# Append lists
+				if match in ret.keys():
+					ret[match].extend(accounts[k])
+				else:
+					ret[k] = accounts[k].extend(accounts[match])
+			else:
+				# Store original list
+				ret[k] = accounts[k]
+		else:
+			ret[k] = accounts[k]'''
+	print(("\tFuzzy matching resolved {} formatted names to {} names.").format(len(accounts.keys()), count))
+	return accounts
 
-def formatName(query):
+def checkAbbr(term):
+	# Checks term for common abbreviations
+	for i in ["Usa", "Wpz ", "Sw ", "Wsu ", " Vmc", "Dc", "Wa ", "La "]:
+		if i in term:
+			# Fix capitalization
+			term = term.replace(i, i.upper())
+	if "Univ" in term:
+		idx = term.find("Univ") + len("Univ") + 1
+		if idx >= len(term):
+			term = term.replace("Univ", "University")
+		elif term[idx] == ".":
+			term = term.replace("Univ.", "University ")
+		elif term[idx] == " ":
+			term = term.replace("Univ ", "University ")
+	if "Hosp" in term:
+		idx = term.index("Hosp")
+		if idx + len("Hosp") == len(term) or term[idx + len("Hosp")] == " ":
+			term = term.replace("Hosp", "Hospital")
+	if " Vet " in term:
+		term = term.replace(" Vet ", " Veterinary ")
+	elif term.find(" Vet") + len(" Vet") == len(term):
+		term = term.replace(" Vet", " Veterinarian")
+	for i in ["A.C.", "A. C.", "A.H.", "A. H.", "V.C.", "V. C.", "V.H.", "V. H.", 
+			"V.S.", "V. S.", "P.V.", "P. V.", "Intl ", "Intl.", "Anim ", "Anim."]:
+		# Check for variations of "Veterinary Hospital"
+		if i in term:
+			if i == "A.C." or i == "A. C.":
+				rep = "Animal Clinic"
+			elif i == "A.H." or i == "A. H.":
+				rep =  "Animal Hospital"
+			elif i == "V.C." or i == "V. C.":
+				rep = "Veterinary Clinic"
+			elif i == "V.H." or i == "V. H.":
+				rep = "Veterinary Hospital"
+			elif i == "V.S." or i == "V. S.":
+				rep = "Veterinary Services"
+			elif i == "P.V." or i == "P. V.":
+				rep = "Pet Vet"
+			elif i == "Intl " or i == "Intl.":
+				rep = "International"
+			elif i == "Anim " or i == "Anim.":
+				rep = "Animal "
+			term = term.replace(i, rep)
+			break
+	return term.strip()
+
+def formatName(term):
 	# Check query format
-	# Replace multiple spaces
-	term = sub(r" +", " ", query)
+	if term.count("?") > 1:
+		return "NA"
 	for i in punctuation:
-		if i != "." and i != "&":
-			if i in term:
-				term = term.replace(i, "")
-	# Store in title case
-	term = term.title()
-	term = checkNA(term)
-	if type(term) != str:
-		term = "NA"
-	elif term != "NA":
-		if " Hosp" in term:
-			idx = term.index(" Hosp")
-			if idx + len(" Hosp") == len(term) or term[idx + len(" Hosp")] == " ":
-				term = term.replace(" Hosp", " Hospital")
-		elif " Anim" in term:
-			term = term.replace(" Anim", " Animal")
-		elif " A.C." in term or " A. C." in term:
-			term = term.replace(" A.C.", " Animal Clinic").replace(" A. C.", " Animal Clinic")
-		elif " A.H." in term or " A. H." in term:
-			term = term.replace(" A.H.", " Animal Hospital").replace(" A. H.", " Animal Hospital")
-		elif " V.C." in term or " V. C." in term:
-			term = term.replace(" V.C.", " Veterinary Clinic").replace(" V. C.", " Veterinary Clinic")
-		elif " V.H." in term or " V. H." in term:
-			term = term.replace(" V.H.", " Veterinary Hospital").replace(" V. H.", " Veterinary Hospital")
-		elif " V.S." in term or " V. S." in term:
-			term = term.replace(" V.S.", " Veterinary Services").replace(" V. S.", " Veterinary Services")
+		if i != "." and i != "&" and i != "-" and i != "#" and i != "'":
+			# Replace with a space and remove extra spaces later
+			term = term.replace(i, " ")
+	# Replace multiple spaces and put in title case
+	term = sub(r" +", " ", term)
+	term = term.strip().title()
+	if term == "None" or "No " in term or "Not " in term:
+		return "NA"
+	term = checkAbbr(term)
 	return term
 
-def sortAccounts(acc):
-	# Attempts to resolve misspellings and formatting errors
+def formatAccounts(acc):
+	# Attempts to resolve capitalization and formatting errors
 	accounts = {}
 	for i in acc:
 		term = formatName(i)
@@ -90,7 +142,7 @@ def sortAccounts(acc):
 			accounts[term].append(i)
 		else:
 			accounts[term] = [i]
-	print(("\tIdentified {} formatted names {} total names.\n").format(len(accounts.keys()), len(acc)))
+	print(("\tIdentified {} formatted names from {} total names.").format(len(accounts.keys()), len(acc)))
 	return accounts
 
 def extractAccounts(infile):
@@ -120,6 +172,8 @@ def editLine(line, accounts, c, d):
 	a = line[c].strip()
 	if a in accounts.keys():
 		line[c] = accounts[a]
+	else:
+		line[c] = "NA"
 	return d.join(line)
 
 def checkAccount(line, accounts, c):
@@ -204,6 +258,7 @@ def checkArgs(args):
 		quit()
 
 def main():
+	start = datetime.now()
 	parser = ArgumentParser("This script will extract/replace/remove lines from a file for given accounts.")
 	parser.add_argument("-r", help = "Accounts to be removed (either a text file or a comma seperated string).")
 	parser.add_argument("-a", help = "Path to file containing corrected account names to replace existing names.")
@@ -214,7 +269,8 @@ def main():
 	if args.o:
 		print(("\n\tExtracting accounts from {}").format(args.i))
 		acc = extractAccounts(args.i)
-		accounts = sortAccounts(acc)
+		accounts = formatAccounts(acc)
+		#accounts = sortAccounts(accounts)
 		writeAccounts(args.o, accounts)
 	elif args.a:
 		print(("\n\tEditing accounts in {}").format(args.i))
@@ -224,6 +280,7 @@ def main():
 		print(("\n\tRemoving accounts from {}").format(args.i))
 		accounts = getAccounts(args.r, True)
 		replaceAccounts(args.i, accounts, True)
+	print(("\tFinished. Runtime: {}\n").format(datetime.now()-start))
 
 if __name__ == "__main__":
 	main()
