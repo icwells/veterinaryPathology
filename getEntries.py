@@ -24,26 +24,30 @@ def findMatch(c, val):
 				return True
 	return False	
 
-def extractLines(infile, outfile, col, val):
+def extractLines(infile, col, val, outfile=None):
 	# Counts unique entries in col
 	x = 0
 	first = True
 	total = 0
-	with open(outfile, "w") as output:
-		with open(infile, "r") as f:
-			for line in f:
-				if first == False:
-					total += 1
-					spli = line.split(delim)
-					if len(spli) > col:
-						match = findMatch(spli[col].strip(), val)
-						if match == True:
-							output.write(line)
-							x += 1
-				else:
-					output.write(line)
-					first = False
-					delim = getDelim(line)
+	matches = []
+	with open(infile, "r") as f:
+		for line in f:
+			if first == False:
+				total += 1
+				spli = line.split(delim)
+				if len(spli) > col:
+					match = findMatch(spli[col].strip(), val)
+					if match == True:
+						matches.append(line)
+						x += 1
+			else:
+				delim = getDelim(line)
+				matches.append(line)
+				first = False
+	if outfile:
+		with open(outfile, "w") as out:
+			for i in matches:
+				out.write(i)
 	return x, total
 
 def countUnique(infile, col):
@@ -143,7 +147,7 @@ help = "Writes entries with multiple occurances from column c to output file (wi
 	parser.add_argument("--empty", action = "store_true", default = False,
 help = "Writes entries with no entry in column c to output file (will append to existing output file).")
 	parser.add_argument("-i", help = "Path to input file.")
-	parser.add_argument("-o", help = "Path to output file (not required for counting).")
+	parser.add_argument("-o", help = "Path to output file (omit for counting).")
 	args = parser.parse_args()
 	checkArgs(args)
 	if args.multiple or args.empty:
@@ -158,7 +162,7 @@ help = "Writes entries with no entry in column c to output file (will append to 
 			print(("\n\tIdentified {} entries with missing values from {} total entries.\n").format(x, t))
 	elif args.v:
 		print(("\n\tExtracting entries with column {} equal to {}...").format(args.c, args.v))
-		x, t = extractLines(args.i, args.o, args.c, args.v)
+		x, t = extractLines(args.i, args.c, args.v, args.o)
 		print(("\tExtracted {} entries from {} total entries.\n").format(x, t))
 	else:
 		print(("\n\tGetting unique entries from column {}...").format(args.c))
