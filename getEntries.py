@@ -122,7 +122,7 @@ def identifyMultiples(infile, col):
 def checkArgs(args):
 	# Identifies errors in arguments
 	if not args.i:
-		print("\n\t[Error] Please provide and input file. Exiting.\n")
+		print("\n\t[Error] Please provide an input file. Exiting.\n")
 		quit()
 	if args.c == -1:
 		args.c = input("\n\tPlease enter column number: ")
@@ -140,7 +140,7 @@ def main():
 	parser = ArgumentParser("This script can be used to count the number of \
 unique entries found in a given column of a file, extract values from a given column, or identify multiple entries.")
 	parser.add_argument("-c", type = int, default = -1,
-help = "Column  number to analyze.")
+help = "Column number to analyze.")
 	parser.add_argument("-v", help = "Value from column c to extract (leave blank to count).")
 	parser.add_argument("--multiple", action = "store_true", default = False,
 help = "Writes entries with multiple occurances from column c to output file (will append to existing output file).")
