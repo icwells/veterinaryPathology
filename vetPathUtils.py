@@ -1,5 +1,7 @@
 '''This script contains common functions for parsing the veterinary pathology database'''
 
+from datetime import datetime
+
 class Columns():
 
 	def __init__(self, header, service = None):
@@ -83,3 +85,7 @@ def printError(msg):
 	# Prints formatted error message and quits
 	print(("\n\t[Error] {}. Exiting.\n").format(msg))
 	quit()
+
+def printRuntime(start):
+	# Prints elsapsed time
+	print(("\tFinished. Runtime: {}\n").format(datetime.now() - start))

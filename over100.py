@@ -1,6 +1,7 @@
 '''This script will extract summary data for species at least 100 records'''
 
 from argparse import ArgumentParser
+from datetime import datetime
 from unixpath import *
 from vetPathUtils import *
 
@@ -10,17 +11,21 @@ def recordEntry():
 
 def writeRecords(outfile, records):
 	# Writes dict to file
+	print("\tWriting records to file...")
 	with open(outfile, "w") as out:
-		out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),PercentMale\n")
+		out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),Male:Female\n")
 		for i in records.keys():
-			rate = 
-			row = ("{},{},{},{:.2%},{:.2f},{:.2%}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, sex)
+			rate = records[i]["cancer"]/records[i]["total"]
+			age = records[i]["age"]/records[i]["total"]
+			sex = records[i]["male"]/records[i]["female"]
+			row = ("{},{},{},{:.2%},{:.2f},{:.2f}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, sex)
 			out.write(row)
 
 def getSpeciesSummaries(infile, species, col, d):
 	# Returns dict of species totals, cancer rates, # male/female, etc
 	first = True
 	records = {}
+	print("\tGetting records...")
 	with open(infile, "r") as f:
 		for line in f:
 			if first == False:
@@ -31,7 +36,10 @@ def getSpeciesSummaries(infile, species, col, d):
 						records[n] = recordEntry()
 					# Update total, cancer rate, age, and sex
 					records[n]["total"] += 1
-					records[n]["age"] += float(spl[col.Age])
+					try:
+						records[n]["age"] += float(spl[col.Age])
+					except ValueError:
+						pass
 					if "8" in spl[col.Code]:
 						records[n]["cancer"] += 1
 					if spl[col.Sex].lower().strip() == "male":
@@ -47,6 +55,7 @@ def getTargetSpecies(infile):
 	totals = {}
 	species = []
 	first = True
+	print("\n\tGetting species totals...")
 	with open(infile, "r") as f:
 		for line in f:
 			if first == False:
@@ -74,6 +83,7 @@ def checkArgs(args):
 		printError(("Cannot find {}").format(args.i))
 
 def main():
+	start = datetime.now()
 	parser = ArgumentParser(
 "This script will extract summary data for species at least 100 records.")
 	parser.add_argument("-i", help = "Path to input file.")
@@ -83,6 +93,7 @@ def main():
 	species, col, d = getTargetSpecies(args.i)
 	records = getSpeciesSummaries(args.i, species, col, d)
 	writeRecords(args.o, records)
+	printRuntime(start)
 
 if __name__ == "__main__":
 	main()
