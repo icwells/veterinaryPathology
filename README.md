@@ -3,13 +3,17 @@
 ### These scripts are meant for the use of the Maley lab, Biodesign Institute, Arizona State University
 ### Copyright 2018 by Shawn Rupp
 
-## Installation 
-### Database Scripts
-	git clone https://github.com/icwells/veterinaryPathology.git 
-### Kestrel 
-	git clone https://github.com/icwells/Kestrel.git 
-### excelToText
-	git clone https://github.com/icwells/unicodeTools.git 
+## Installation  
+### Database Scripts  
+	git clone https://github.com/icwells/veterinaryPathology.git  
+### Kestrel  
+	git clone https://github.com/icwells/Kestrel.git  
+### excelToText  
+	git clone https://github.com/icwells/unicodeTools.git  
+### unixpath  
+	git clone https://github.com/icwells/unixpath.git  
+	cd unixpath/  
+	python setup.py install  
 
 ## Usage 
 
