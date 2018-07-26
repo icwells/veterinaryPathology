@@ -4,17 +4,67 @@ from argparse import ArgumentParser
 from unixpath import *
 from vetPathUtils import *
 
-def getTotals(infile):
+def recordEntry():
+	# Returns new entry for record dict
+	return {"total":0, "cancer":0, "male":0, "female":0, "age":0.0}
+
+def writeRecords(outfile, records):
+	# Writes dict to file
+	with open(outfile, "w") as out:
+		out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),PercentMale\n")
+		for i in records.keys():
+			rate = 
+			row = ("{},{},{},{:.2%},{:.2f},{:.2%}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, sex)
+			out.write(row)
+
+def getSpeciesSummaries(infile, species, col, d):
+	# Returns dict of species totals, cancer rates, # male/female, etc
+	first = True
+	records = {}
+	with open(infile, "r") as f:
+		for line in f:
+			if first == False:
+				spl = line.strip().split(d)
+				n = spl[col.Species]
+				if n in species:
+					if n not in records.keys():
+						records[n] = recordEntry()
+					# Update total, cancer rate, age, and sex
+					records[n]["total"] += 1
+					records[n]["age"] += float(spl[col.Age])
+					if "8" in spl[col.Code]:
+						records[n]["cancer"] += 1
+					if spl[col.Sex].lower().strip() == "male":
+						records[n]["male"] += 1
+					elif spl[col.Sex].lower().strip() == "female":
+						records[n]["female"] += 1
+			else:
+				first = False
+	return records
+
+def getTargetSpecies(infile):
 	# Returns list of species with at least 100 entries
 	totals = {}
+	species = []
 	first = True
 	with open(infile, "r") as f:
 		for line in f:
 			if first == False:
-
-
+				spl = line.split(d)
+				n = spl[col.Species]
+				# Count number of occurances
+				if n in totals.keys():
+					totals[n] += 1
+				else:
+					totals[n] = 1
 			else:
-				
+				d = getDelim(line)
+				col = Columns(line.split(d))
+				first = False
+	for i in totals.keys():
+		if totals[i] >= 100:
+			species.append(i)
+	return species, col, d
 
 def checkArgs(args):
 	# Check args for errors
@@ -27,10 +77,12 @@ def main():
 	parser = ArgumentParser(
 "This script will extract summary data for species at least 100 records.")
 	parser.add_argument("-i", help = "Path to input file.")
-	parser.add_argument("-o", help = "Path to output file.")
+	parser.add_argument("-o", help = "Path to output csv.")
 	args = parser.parse_args()
 	checkArgs(args)
-	counts = getTotals(args.i)
+	species, col, d = getTargetSpecies(args.i)
+	records = getSpeciesSummaries(args.i, species, col, d)
+	writeRecords(args.o, records)
 
 if __name__ == "__main__":
 	main()
