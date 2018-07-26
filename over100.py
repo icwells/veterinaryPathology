@@ -7,18 +7,25 @@ from vetPathUtils import *
 
 def recordEntry():
 	# Returns new entry for record dict
-	return {"total":0, "cancer":0, "male":0, "female":0, "age":0.0}
+	return {"total":0, "cancer":0, "male":0, "female":0, "age":0.0, "agetotal":0, "cancerAge":0.0, "cancertotal":0}
 
 def writeRecords(outfile, records):
 	# Writes dict to file
 	print("\tWriting records to file...")
 	with open(outfile, "w") as out:
-		out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),Male:Female\n")
+		out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),AvgAgeCancer(months),Male:Female\n")
 		for i in records.keys():
 			rate = records[i]["cancer"]/records[i]["total"]
-			age = records[i]["age"]/records[i]["total"]
+			if records[i]["agetotal"] > 0:
+				age = records[i]["age"]/records[i]["agetotal"]
+			else:
+				age = 0.0
+			if records[i]["cancertotal"] > 0:
+				cancerage = records[i]["cancerAge"]/records[i]["cancertotal"]
+			else:
+				cancerage = 0.0
 			sex = records[i]["male"]/records[i]["female"]
-			row = ("{},{},{},{:.2%},{:.2f},{:.2f}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, sex)
+			row = ("{},{},{},{:.2%},{:.2f},{:.2f},{:.2f}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, cancerage, sex)
 			out.write(row)
 
 def getSpeciesSummaries(infile, species, col, d):
@@ -38,10 +45,16 @@ def getSpeciesSummaries(infile, species, col, d):
 					records[n]["total"] += 1
 					try:
 						records[n]["age"] += float(spl[col.Age])
+						records[n]["agetotal"] += 1
 					except ValueError:
 						pass
 					if "8" in spl[col.Code]:
-						records[n]["cancer"] += 1
+						records[n]["cancer"] += 1					
+						try:
+							records[n]["cancerAge"] += float(spl[col.Age])
+							records[n]["cancertotal"] += 1
+						except ValueError:
+							pass
 					if spl[col.Sex].lower().strip() == "male":
 						records[n]["male"] += 1
 					elif spl[col.Sex].lower().strip() == "female":
