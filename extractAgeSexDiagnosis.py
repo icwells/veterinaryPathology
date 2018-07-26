@@ -3,6 +3,7 @@
 import os
 import re
 from argparse import ArgumentParser
+from vetPathUtils import getDelim
 
 def getMatch(query, line):
 	# Searches line for regular expression
@@ -69,15 +70,7 @@ def parseLine(loc, typ, age, sex, digit, nec, line):
 	necropsy = getMatch(nec, line)
 	if necropsy != "NA":
 		n = "Y"
-	return ("{},{},{},{},{}").format(a, s, l, t, n)
-
-def getDelim(line):
-	# Returns delimiter
-	for i in ["\t", ",", " "]:
-		if i in line:
-			return i
-	print("\n\t[Error] Cannot determine delimeter. Check file formatting. Exiting.\n")
-	quit()	
+	return ("{},{},{},{},{}").format(a, s, l, t, n)	
 
 def getDescription(loc, typ, c, infile, outfile):
 	# Reads input file and writes output to file

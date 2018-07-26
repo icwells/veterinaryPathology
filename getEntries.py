@@ -3,14 +3,7 @@ column of a file, extract values from a given column, or identify multiple entri
 
 import os
 from argparse import ArgumentParser
-
-def getDelim(line):
-	# Returns delimiter
-	for i in ["\t", ",", " "]:
-		if i in line:
-			return i
-	print("\n\t[Error] Cannot determine delimeter. Check file formatting. Exiting.\n")
-	quit()
+from vetPathUtils import printError, getDelim
 
 def findMatch(c, val):
 	# Identifies whole word matches
@@ -122,8 +115,7 @@ def identifyMultiples(infile, col):
 def checkArgs(args):
 	# Identifies errors in arguments
 	if not args.i:
-		print("\n\t[Error] Please provide an input file. Exiting.\n")
-		quit()
+		printError("Please provide an input file")
 	if args.c == -1:
 		args.c = input("\n\tPlease enter column number: ")
 	if args.multiple == True or args.empty == True:

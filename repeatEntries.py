@@ -4,6 +4,7 @@ multiple entries over time.'''
 import os
 from argparse import ArgumentParser
 from datetime import datetime
+from vetPathUtils import getDelim
 
 class Entries():
 	# Class for identifying repeated patient ids 
@@ -85,15 +86,7 @@ def getColumns(head):
 			quit()
 	# Store max value to avoid index errors
 	col["max"] = max(list(col.values()))
-	return col
-
-def getDelim(line):
-	# Returns delimiter
-	for i in ["\t", ",", " "]:
-		if i in line:
-			return i
-	print("\n\t[Error] Cannot determine delimeter. Check file formatting. Exiting.\n")
-	quit()	 
+	return col 
 
 def extractRepeats(infile, outfile, reps, delim, col):
 	# Writes entries in reps to file
@@ -153,11 +146,9 @@ def getRepeats(infile):
 def checkArgs(args):
 	# Check args for errors
 	if not args.i or not args.o:
-		print("\n\t[Error] Please specify input and output files. Exiting.\n")
-		quit()
+		printError("Please specify input and output files")
 	if not os.path.isfile(args.i):
-		print(("\n\t[Error] Cannot find {}. Exiting.\n").format(args.i))
-		quit()
+		printError(("Cannot find {}").format(args.i))
 
 def main():
 	start = datetime.now()

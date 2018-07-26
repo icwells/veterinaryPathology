@@ -3,6 +3,7 @@
 import os
 from datetime import datetime
 from argparse import ArgumentParser
+from vetPathUtils import printError, getDelim
 
 def printTotal(count, total):
 	# Prints number of taxonomies found
@@ -107,9 +108,7 @@ def sortMSU(taxa, infile, outfile):
 				else:
 					output.write("ID,Date,Owner,Name,Species,Breed,ScientificName,\
 Kingdom,Phylum,Class,Order,Family,Genus,Days,Age,Sex,Diagnosis\n")
-					delim = ","
-					if "\t" in line:
-						delim = "\t"
+					delim = getDelim(line)
 					first = False
 	printTotal(count, total)
 
@@ -148,11 +147,6 @@ def getTaxa(infile):
 				first = False
 	print(("\tFound {} taxonomies with {} unique species.").format(len(taxa.keys()), len(species)))
 	return taxa
-
-def printError(msg):
-	# Prints formatted error message and quits
-	print(("\n\t[Error] {}. Exiting.\n").format(msg))
-	quit()
 
 def checkArgs(args):
 	# Checks args for errors
