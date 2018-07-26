@@ -2,8 +2,9 @@
 
 import os
 import re
+from datetime import datetime
 from argparse import ArgumentParser
-from vetPathUtils import getDelim, printError
+from vetPathUtils import *
 from unixpath import *
 
 class Matcher():
@@ -65,7 +66,7 @@ class Matcher():
 		else:
 			return False
 
-	def parseLine(self, line):
+	def parseLine(self, line, cancer = True):
 		# Extracts data from line
 		row = []
 		line = line.lower().strip()
@@ -81,16 +82,18 @@ class Matcher():
 		row.append(str(a))
 		row.append(self.getMatch(self.Sex, line))
 		for c in [self.Castrated, self.Location, self.Type, self.Primary, self.Metastasis, self.Necropsy]:
-			m = "NA"
 			if c == self.Location or c == self.Type:
-				# Search location/type dicts
-				for i in c.keys():
-					match = self.getMatch(c[i], line)
-					if match != "NA":
-						m = i
-						break
+				m = "NA"
+				if cancer == True:
+					# Search location/type dicts
+					for i in c.keys():
+						match = self.getMatch(c[i], line)
+						if match != "NA":
+							m = i
+							break
 			else:
 				# Search for yes/no matches
+				m = "N"
 				match = self.getMatch(c, line)
 				if match != "NA":
 					m = "Y"
@@ -123,7 +126,10 @@ def getDescription(infile, outfile, c):
 							row = " ".join(splt)
 							# Skip entries with missing data
 							if row != "NA":
-								res = matcher.parseLine(row)
+								if col.Service == "NWZP" and "8" not in splt[col.Code]:
+									res = matcher.parseLine(row, False)
+								else:
+									res = matcher.parseLine(row)
 								if not res:
 									excluded += 1
 								elif res.count("NA") < 8:
@@ -133,10 +139,11 @@ def getDescription(infile, outfile, c):
 										complete += 1
 				else:
 					delim = getDelim(line)
+					col = Columns(line.split(delim), getService(infile))
 					first = False
 	print(("\tFound data for {:,} of {:,} records.").format(found, total))
 	print(("\tFound complete information for {:,} records.").format(complete))
-	print(("\tExcluded {:,} records to account for infant mortality.\n").format(excluded))
+	print(("\tExcluded {:,} records to account for infant mortality.").format(excluded))
 
 def checkArgs(args):
 	# Checks args for errors
@@ -146,6 +153,7 @@ def checkArgs(args):
 	checkFile("cancerdict.tsv")
 
 def main():
+	start = datetime.now()
 	parser = ArgumentParser(description = "This script will extract \
 age, sex, and diagnosis from a given input file")
 	parser.add_argument("-i", help = "Path to input file.")
@@ -154,7 +162,8 @@ age, sex, and diagnosis from a given input file")
 help = "ID column number (first column by default).")
 	args = parser.parse_args()
 	checkArgs(args)
-	getDescription(args.i, args.o, args.c) 
+	getDescription(args.i, args.o, args.c)
+	printRuntime(start)
 
 if __name__ == "__main__":
 	main()

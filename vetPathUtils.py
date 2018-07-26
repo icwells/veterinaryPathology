@@ -62,7 +62,7 @@ class Columns():
 			elif i == "Code":
 				self.Code = idx
 				indeces.append(idx)
-			self.Max = max(indeces)
+		self.Max = max(indeces)
 
 #-----------------------------------------------------------------------------
 
@@ -75,10 +75,12 @@ def getDelim(line):
 
 def getService(infile):
 	# Returns service name from file name
-	f = infile.Upper()
+	f = infile.upper()
 	for i in ["NWZP", "MSU", "ZEPS"]:
 		if i in f:
 			return f
+	if "testgood" in infile:
+		return "NWZP"
 	printError("Cannot find service name in file name")
 
 def printError(msg):
