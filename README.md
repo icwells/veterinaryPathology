@@ -41,7 +41,7 @@ found in the databaseSpecific folder for the time being).
 	-r R		Path to records file with age, sex, and cancer type (NWZP only; not required). 
 	-o O		Output file.  
 
-### extractAgeSexDiagnosis.py
+### extractDiagnosis.py
 This script will extract age, sex, and cancer type and location from the input file. Make sure cancerdict.tsv is in the same directory. 
 
 	python extractNWZP.py -c column -i path/to/records/file -o path/to/output
