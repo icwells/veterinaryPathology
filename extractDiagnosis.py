@@ -18,10 +18,12 @@ class Matcher():
 		# Match digits, dash or space, term and any of: "s", dash or space, "old"
 		self.Age = re.compile(r"[0-9]+(-|\s)(day|week|month|year)s?(-|\s)(old)?")
 		self.Sex = re.compile(r"(fe)?male")
-		self.Necropsy = re.compile(r"necropsy|decesed|cause of death")
-		self.Metastasis = re.compile(r"metastatis|mets")
-		self.Castrated = re.compile(r"castrat(ed)?|neuter(ed)?|spay(ed)?")
+		# Binary expressions
+		self.Castrated = re.compile(r"(not )?(castrat(ed)?|neuter(ed)?|spay(ed)?)")
+		self.Malignant = re.compile(r"(not )?(malignant|benign)")
+		self.Metastasis = re.compile(r"(no )?(metastatis|mets)")
 		self.Primary = re.compile(r"primary|single|solitary|source")
+		self.Necropsy = re.compile(r"(necropsy|decesed|cause of death)|(biopsy)")
 		self.__setTypes__()
 
 	def __setTypes__(self):
@@ -36,17 +38,47 @@ class Matcher():
 					elif splt[0] == "Type":
 						self.Type[splt[1]] = re.compile(splt[2])
 
-	def getMatch(self, query, line):
+	def __getMatch__(self, query, line, subset = True):
 		# Searches line for regular expression
 		match = re.search(query, line)
 		if match:
-			return match.group(0)
+			if subset == True:
+				return match.group(0)
+			else:
+				return match
 		else:
 			return "NA"
 
-	def ageInMonths(self, a):
+	def __binaryMatch__(self, query, line, exp = None):
+		# Sorts results for yes/no search
+		ret = "NA"
+		match = self.__getMatch__(query, line, False)
+		if match != "NA":
+			if exp:
+				# Return N if group 2 == exp
+				if match.group(2):
+					if match.group(1):
+						# Store negated value
+						if match.group(2) == exp:
+							ret = "Y"
+						else:
+							ret = "N"
+					else:
+						if match.group(2) == exp:
+							ret = "N"
+						else:
+							ret = "Y"
+			else:
+				# Return N if no/not was found
+				if match.group(1):
+					ret = "N"
+				elif match.group(2):
+					ret = "Y"
+		return ret
+
+	def __ageInMonths__(self, a):
 		# Converts age to months
-		d = int(self.getMatch(self.Digit, a))
+		d = int(self.__getMatch__(self.Digit, a))
 		if d == 0:
 			return None
 		elif "year" in a:
@@ -58,7 +90,7 @@ class Matcher():
 		elif "day" in a:
 			return d/30
 
-	def infantRecords(self, line):
+	def __infantRecords__(self, line):
 		# Returns True if record os for an infant
 		match = re.search(self.Infant, line)
 		if match:
@@ -70,34 +102,40 @@ class Matcher():
 		# Extracts data from line
 		row = []
 		line = line.lower().strip()
-		if self.infantRecords(line) == True:
+		if self.__infantRecords__(line) == True:
 			# Remove neonatal/infant records
 			return None
-		a = self.getMatch(self.Age, line)
+		a = self.__getMatch__(self.Age, line)
 		if a != "NA":
-			a = self.ageInMonths(a)
+			a = self.__ageInMonths__(a)
 			if not a or a < 0.25:
 				# Remove records under 1 week old
 				return None
 		row.append(str(a))
-		row.append(self.getMatch(self.Sex, line))
-		for c in [self.Castrated, self.Location, self.Type, self.Primary, self.Metastasis, self.Necropsy]:
-			if c == self.Location or c == self.Type:
-				m = "NA"
-				if cancer == True:
-					# Search location/type dicts
-					for i in c.keys():
-						match = self.getMatch(c[i], line)
-						if match != "NA":
-							m = i
-							break
-			else:
-				# Search for yes/no matches
-				m = "N"
-				match = self.getMatch(c, line)
-				if match != "NA":
-					m = "Y"
+		row.append(self.__getMatch__(self.Sex, line))
+		row.append(self.__binaryMatch__(self.Castrated, line))
+		for c in [self.Location, self.Type]:
+			m = "NA"
+			if cancer == True:
+				# Search putative cancer records
+				for i in c.keys():
+					match = self.__getMatch__(c[i], line)
+					if match != "NA":
+						m = i
+						break
 			row.append(m)
+		row.append(self.__binaryMatch__(self.Malignant, line, "benign"))
+		met = self.__binaryMatch__(self.Metastasis, line)
+		if met == "N" and m != "NA":
+			# Store yes for primary if a tumor was found but no metastasis
+			row.append("Y")
+		else:
+			if self.__getMatch__(self.Primary, line) != "NA":
+				row.append("Y")
+			else:
+				row.append("NA")
+		row.append(met)
+		row.append(self.__binaryMatch__(self.Necropsy, line, "biopsy"))
 		return ",".join(row)
 
 #-----------------------------------------------------------------------------
@@ -112,7 +150,7 @@ def getDescription(infile, outfile, c):
 	matcher = Matcher()
 	print(("\n\tExtracting data from {}...").format(infile))
 	with open(outfile, "w") as output:
-		output.write("ID,Age(months),Sex,Castrated,Location,Type,PrimaryTumor,Metastasis,Necropsy\n")
+		output.write("ID,Age(months),Sex,Castrated,Location,Type,Malignant,PrimaryTumor,Metastasis,Necropsy\n")
 		with open(infile, "r") as f:
 			for line in f:
 				if first == False:
