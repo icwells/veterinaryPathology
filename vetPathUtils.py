@@ -12,8 +12,13 @@ class Columns():
 		self.Common = None
 		self.Age = None
 		self.Sex = None
+		self.Castrated = None
 		self.Location = None
 		self.Type = None
+		self.Primary = None
+		self.Metastasis = None
+		self.Malignant = None
+		self.Necropsy = None
 		self.Date = None
 		self.Comments = None
 		self.Account = None
@@ -41,11 +46,26 @@ class Columns():
 			elif i == "Sex":
 				self.Sex = idx
 				indeces.append(idx)
+			elif i == "Castrated":
+				self.Castrated = None
+				indeces.append(idx)
 			elif i == "Location":
 				self.Location = idx
 				indeces.append(idx)
-			elif i == "CancerType":
+			elif i == "CancerType" or i == "Type":
 				self.Type = idx
+				indeces.append(idx)
+			elif i == "PrimaryTumor" or i == "Primary":
+				self.Primary = idx
+				indeces.append(idx)
+			elif i == "Metastasis":
+				self.Metastasis = idx
+				indeces.append(idx)
+			elif i == "Malignant":
+				self.Malignant = idx
+				indeces.append(idx)
+			elif i == "Necropsy":
+				self.Necropsy = idx
 				indeces.append(idx)
 			elif "Date" in i:
 				self.Date = idx
@@ -78,7 +98,7 @@ def getService(infile):
 	f = infile.upper()
 	for i in ["NWZP", "MSU", "ZEPS"]:
 		if i in f:
-			return f
+			return i
 	if "testgood" in infile:
 		return "NWZP"
 	printError("Cannot find service name in file name")
