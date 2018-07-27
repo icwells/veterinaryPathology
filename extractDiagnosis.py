@@ -13,7 +13,7 @@ class Matcher():
 		# Defines class for handling regex matches for vet oncology data
 		self.Location = {}
 		self.Type = {}
-		self.Infant = re.compile(r"infant|(peri|neo)nat(e|al)|fet(us|al)")
+		self.Infant = re.compile(r"(infant|peri|neo)nat(e|al)|fet(us|al)")
 		self.Digit = re.compile(r"[0-9]+")
 		# Match digits, dash or space, term and any of: "s", dash or space, "old"
 		self.Age = re.compile(r"[0-9]+(-|\s)(day|week|month|year)s?(-|\s)(old)?")
@@ -103,14 +103,11 @@ class Matcher():
 		row = []
 		line = line.lower().strip()
 		if self.__infantRecords__(line) == True:
-			# Remove neonatal/infant records
-			return None
-		a = self.__getMatch__(self.Age, line)
-		if a != "NA":
-			a = self.__ageInMonths__(a)
-			if not a or a < 0.25:
-				# Remove records under 1 week old
-				return None
+			a = 0
+		else:
+			a = self.__getMatch__(self.Age, line)
+			if a != "NA":
+				a = self.__ageInMonths__(a)
 		row.append(str(a))
 		row.append(self.__getMatch__(self.Sex, line))
 		row.append(self.__binaryMatch__(self.Castrated, line))
@@ -144,7 +141,6 @@ def getDescription(infile, outfile, c):
 	# Reads input file and writes output to file
 	total = 0
 	found = 0
-	excluded = 0
 	complete = 0
 	first = True
 	matcher = Matcher()
@@ -168,9 +164,7 @@ def getDescription(infile, outfile, c):
 									res = matcher.parseLine(row, False)
 								else:
 									res = matcher.parseLine(row)
-								if not res:
-									excluded += 1
-								elif res.count("NA") < 8:
+								if res.count("NA") < 8:
 									found += 1
 									output.write(("{},{}\n").format(ID, res))
 									if res.count("NA") == 0:
@@ -181,7 +175,6 @@ def getDescription(infile, outfile, c):
 					first = False
 	print(("\tFound data for {:,} of {:,} records.").format(found, total))
 	print(("\tFound complete information for {:,} records.").format(complete))
-	print(("\tExcluded {:,} records to account for infant mortality.").format(excluded))
 
 def checkArgs(args):
 	# Checks args for errors
