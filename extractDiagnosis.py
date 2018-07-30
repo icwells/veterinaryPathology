@@ -98,18 +98,14 @@ class Matcher():
 		else:
 			return False
 
-	def parseLine(self, line, days, cancer = True):
+	def parseLine(self, line, age, cancer = True):
 		# Extracts data from line
 		row = []
 		line = line.lower().strip()
 		if self.__infantRecords__(line) == True:
 			a = 0
-		elif days:
-			days = float(days)
-			if days <= 0:
-				a = 0
-			else:
-				a = ("{:.2f}").format(days/30)
+		elif age:
+			a = age
 		else:
 			a = self.__getMatch__(self.Age, line)
 			if a != "NA":
@@ -146,6 +142,24 @@ class Matcher():
 
 #-----------------------------------------------------------------------------
 
+def getAge(col, row):
+	# Returns age if given
+	if col.Days:
+		age = row[col.Days]
+	elif col.Age:
+		age = row[col.Age]
+	else: 
+		return None
+	try:
+		age = float(age)
+	except ValueError:
+		return None
+	if col.Days:
+		return ("{:.2f}").format(age/30)
+	if col.Age:
+		return ("{:.2f}").format(age*12)
+	
+
 def getDescription(infile, outfile, c):
 	# Reads input file and writes output to file
 	total = 0
@@ -165,18 +179,15 @@ def getDescription(infile, outfile, c):
 						if len(splt) > c:
 							# Compress all fields other than ID into one
 							ID = splt[c]
-							# Get days old if given
-							days = None
-							if col.Days:
-								days = splt[col.Days]
+							age = getAge(col, line)
 							del splt[c]
 							row = " ".join(splt)
 							# Skip entries with missing data
 							if row != "NA":
 								if col.Service == "NWZP" and "8" not in splt[col.Code]:
-									res = matcher.parseLine(row, days, False)
+									res = matcher.parseLine(row, age, False)
 								else:
-									res = matcher.parseLine(row, days)
+									res = matcher.parseLine(row, age)
 								if res.count("NA") < len(res):
 									found += 1
 									output.write(("{},{}\n").format(ID, res))

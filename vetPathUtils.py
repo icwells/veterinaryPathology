@@ -41,7 +41,7 @@ class Columns():
 			elif i == "ScientificName":
 				self.Species = idx
 				indeces.append(idx)
-			elif i == "Age(months)":
+			elif i == "Age(months)" or i == "Age":
 				self.Age = idx
 				indeces.append(idx)
 			elif i == "Days":
