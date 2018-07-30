@@ -11,6 +11,7 @@ class Columns():
 		self.Species = None
 		self.Common = None
 		self.Age = None
+		self.Days = None
 		self.Sex = None
 		self.Castrated = None
 		self.Location = None
@@ -42,6 +43,9 @@ class Columns():
 				indeces.append(idx)
 			elif i == "Age(months)":
 				self.Age = idx
+				indeces.append(idx)
+			elif i == "Days":
+				self.Days = idx
 				indeces.append(idx)
 			elif i == "Sex":
 				self.Sex = idx

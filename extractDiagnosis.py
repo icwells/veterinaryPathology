@@ -13,7 +13,7 @@ class Matcher():
 		# Defines class for handling regex matches for vet oncology data
 		self.Location = {}
 		self.Type = {}
-		self.Infant = re.compile(r"(infant|peri|neo)nat(e|al)|fet(us|al)")
+		self.Infant = re.compile(r"infant|(peri|neo)nat(e|al)|fet(us|al)")
 		self.Digit = re.compile(r"[0-9]+")
 		# Match digits, dash or space, term and any of: "s", dash or space, "old"
 		self.Age = re.compile(r"[0-9]+(-|\s)(day|week|month|year)s?(-|\s)(old)?")
@@ -98,19 +98,28 @@ class Matcher():
 		else:
 			return False
 
-	def parseLine(self, line, cancer = True):
+	def parseLine(self, line, days, cancer = True):
 		# Extracts data from line
 		row = []
 		line = line.lower().strip()
 		if self.__infantRecords__(line) == True:
 			a = 0
+		elif days:
+			days = float(days)
+			if days <= 0:
+				a = 0
+			else:
+				a = ("{:.2f}").format(days/30)
 		else:
 			a = self.__getMatch__(self.Age, line)
 			if a != "NA":
 				a = self.__ageInMonths__(a)
 		row.append(str(a))
 		row.append(self.__getMatch__(self.Sex, line))
-		row.append(self.__binaryMatch__(self.Castrated, line))
+		cas = self.__binaryMatch__(self.Castrated, line)
+		if cas == "NA" and "intact" in line:
+			cas = "N"
+		row.append(cas)
 		for c in [self.Location, self.Type]:
 			m = "NA"
 			if cancer == True:
@@ -156,15 +165,19 @@ def getDescription(infile, outfile, c):
 						if len(splt) > c:
 							# Compress all fields other than ID into one
 							ID = splt[c]
+							# Get days old if given
+							days = None
+							if col.Days:
+								days = splt[col.Days]
 							del splt[c]
 							row = " ".join(splt)
 							# Skip entries with missing data
 							if row != "NA":
 								if col.Service == "NWZP" and "8" not in splt[col.Code]:
-									res = matcher.parseLine(row, False)
+									res = matcher.parseLine(row, days, False)
 								else:
-									res = matcher.parseLine(row)
-								if res.count("NA") < 8:
+									res = matcher.parseLine(row, days)
+								if res.count("NA") < len(res):
 									found += 1
 									output.write(("{},{}\n").format(ID, res))
 									if res.count("NA") == 0:

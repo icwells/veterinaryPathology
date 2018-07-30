@@ -5,6 +5,8 @@ from datetime import datetime
 from argparse import ArgumentParser
 from vetPathUtils import printError, getDelim
 
+BLANKRECORD = ["NA","NA","NA","NA","NA","NA","NA","NA","NA"]
+
 def printTotal(count, total):
 	# Prints number of taxonomies found
 	print(("\tFound taxonomies for {} of {} entries.").format(count, total))
@@ -40,12 +42,12 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 			for line in f:
 				total += 1
 				if first == False:
-					r = ["NA","NA","NA","NA","NA","NA","NA","NA","NA"]
+					r = BLANKRECORD
 					line = line.strip().split(",")
 					if len(line) >= 7:
 						if rec:
 							if line[0] in rec.keys():
-								# Get age, sex, location, and type
+								# Get diagnosis records
 								r = rec[line[0]]
 						row = formatRow(c, taxa, line, r)
 						if row:
@@ -58,7 +60,7 @@ Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
 					first = False
 	printTotal(count, total)
 
-def sortZEPS(taxa, infile, outfile):
+def sortZEPS(taxa, rec, infile, outfile):
 	# Sorts database and writes out relevant data with taxonomy
 	first = True
 	count = 0
@@ -69,11 +71,20 @@ def sortZEPS(taxa, infile, outfile):
 			for line in f:
 				total += 1
 				if first == False:
+					r = BLANKRECORD
 					line = line.strip().split(delim)
 					if len(line) == 6:
+						if rec:
+							if line[0] in rec.keys():
+								# Get diagnosis records
+								r = rec[line[0]]
 						n = line[2]
 						if n in taxa.keys():
-							row = line[:3] + [taxa[n][-1]] + taxa[n][:-1] + line[3:]
+							row = line[:3]
+							row.append([taxa[n][-1]][0])
+							row.extend(taxa[n][:-1])
+							row.extend(r)
+							row.append(line[-1])
 							if row:
 								output.write(",".join(row) + "\n")
 								count += 1
@@ -87,7 +98,7 @@ Phylum,Class,Order,Family,Genus,Sex,Age,Diagnosis\n")
 					first = False
 	printTotal(count, total)
 
-def sortMSU(taxa, infile, outfile):
+def sortMSU(taxa, rec, infile, outfile):
 	# Sorts database and writes out relevant data with taxonomy
 	first = True
 	count = 0
@@ -98,17 +109,27 @@ def sortMSU(taxa, infile, outfile):
 			for line in f:
 				total += 1
 				if first == False:
+					r = BLANKRECORD
 					line = line.strip().split(delim)
 					if len(line) >= 6:
+						if rec:
+							if line[0] in rec.keys():
+								# Get diagnosis records
+								r = rec[line[0]]
 						n = line[5]
 						if n in taxa.keys():
-							row = line[:6] + [taxa[n][-1]] + taxa[n][:-1] + line[6:]
+							row = line[:6]
+							row.append([taxa[n][-1]][0])
+							row.extend(taxa[n][:-1])
+							row.extend(r)
+							row.append(line[-1])
 							if row:
 								output.write(",".join(row) + "\n")
 								count += 1
 				else:
 					output.write("ID,Date,Owner,Name,Species,Breed,ScientificName,\
-Kingdom,Phylum,Class,Order,Family,Genus,Days,Age,Sex,Diagnosis\n")
+Kingdom,Phylum,Class,Order,Family,Genus,Days,Age(months),Sex,Castrated,Location,Type,\
+Malignant,PrimaryTumor,Metastasis,Necropsy,Diagnosis\n")
 					delim = getDelim(line)
 					first = False
 	printTotal(count, total)
@@ -189,14 +210,16 @@ help = "Path to records file with age, sex, and cancer type (NWZP only; not requ
 	args = parser.parse_args()
 	checkArgs(args)
 	taxa = getTaxa(args.t)
+	# Check for diagnosis records
+	rec = None
+	if args.r:
+		rec = getRecords(args.r)
 	if args.n:
-		if args.r:
-			rec = getRecords(args.r)
 		sortNWZP(args.cancer, taxa, rec, args.n, args.o)
 	elif args.m:
-		sortMSU(taxa, args.m, args.o)
+		sortMSU(taxa, rec, args.m, args.o)
 	elif args.z:
-		sortZEPS(taxa, args.z, args.o)
+		sortZEPS(taxa, rec, args.z, args.o)
 	print(("\n\tFinished. Runtime: {}\n").format(datetime.now() - start))
 
 if __name__ == "__main__":
