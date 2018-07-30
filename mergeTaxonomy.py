@@ -90,7 +90,8 @@ def sortZEPS(taxa, rec, infile, outfile):
 								count += 1
 				else:
 					output.write("Access#,Category,Breed,ScientificName,Kingdom,\
-Phylum,Class,Order,Family,Genus,Sex,Age,Diagnosis\n")
+Phylum,Class,Order,Family,Genus,Age(months),Sex,Castrated,Location,Type,\
+Malignant,PrimaryTumor,Metastasis,Necropsy,Diagnosis\n")
 					if "\t" in line:
 						delim = "\t"
 					else:
