@@ -51,7 +51,7 @@ class Columns():
 				self.Sex = idx
 				indeces.append(idx)
 			elif i == "Castrated":
-				self.Castrated = None
+				self.Castrated = idx
 				indeces.append(idx)
 			elif i == "Location":
 				self.Location = idx

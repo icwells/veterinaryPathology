@@ -54,7 +54,8 @@ def parseRecords(infile, outfile):
 	# Sorts input and re-writes according to upload template
 	first = True
 	serv = getService(infile)
-	with open(outfile, "w") as out:
+	checkOutfile(outfile)
+	with open(outfile, "a") as out:
 		with open(infile, "r") as f:
 			for line in f:
 				if first == False:
