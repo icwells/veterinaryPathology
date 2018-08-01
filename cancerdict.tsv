@@ -39,5 +39,3 @@ Type	leukemia	(?i)leukemia
 Type	neoplasia	(?i)neoplasia|neoplasm|tumor
 Type	polyp	(?i)polyp
 Type	sarcoma	(?i)sarcoma
-Exam	necropsy	
-Exam	biopsy	
