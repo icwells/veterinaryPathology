@@ -74,6 +74,7 @@ def main():
 	parser.add_argument("-i", help = "Path to full record file.")
 	parser.add_argument("-o", help = "Path to output csv (will append to existing file).")
 	args = parser.parse_args()
+	print(("\n\tSorting data from {}...\n").format(args.i))
 	parseRecords(args.i, args.o)
 
 if __name__ == "__main__":
