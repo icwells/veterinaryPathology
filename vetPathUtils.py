@@ -32,6 +32,7 @@ class Columns():
 		# Assigns column numbers from header
 		indeces = []
 		for idx, i in enumerate(header):
+			i = i.strip()
 			if i == "ID":
 				self.ID = idx
 				indeces.append(idx)

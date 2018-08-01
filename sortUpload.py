@@ -34,6 +34,7 @@ def formatLine(col, line):
 		row.append(line[col.Type])
 		row.append(line[col.Location])
 		row.append(getBinary(line[col.Primary]))
+		row.append(getBinary(line[col.Malignant]))
 		row.append(col.Service)
 		if col.Account:
 			row.append(line[col.Account])
