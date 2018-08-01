@@ -248,7 +248,7 @@ def getAccounts(a, rm = False):
 def checkArgs(args):
 	# Identifies errors in arguments
 	if not args.i:
-		print("\n\t[Error] Please provide and input file. Exiting.\n")
+		print("\n\t[Error] Please provide an input file. Exiting.\n")
 		quit()
 	if args.o and args.r or args.o and args.a or args.a and args.r:
 		print("\n\t[Error] Please specify only one of: remove (-r), extract (-o), or replace (-a). Exiting.\n")
