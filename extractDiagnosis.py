@@ -4,6 +4,7 @@ import os
 import re
 from datetime import datetime
 from argparse import ArgumentParser
+from copy import deepcopy
 from vetPathUtils import *
 from unixpath import *
 
@@ -180,14 +181,15 @@ def getDescription(infile, outfile, c):
 							# Compress all fields other than ID into one
 							ID = splt[c]
 							age = getAge(col, line)
-							del splt[c]
-							row = " ".join(splt)
+							row = deepcopy(splt)
+							del row[c]
+							row = " ".join(row)
 							# Skip entries with missing data
 							if row != "NA":
 								if col.Service == "NWZP" and "8" not in splt[col.Code]:
 									res = matcher.parseLine(row, age, False)
 								else:
-									res = matcher.parseLine(row, age)
+									res = matcher.parseLine(row, age, True)
 								if res.count("NA") < len(res):
 									found += 1
 									output.write(("{},{}\n").format(ID, res))
