@@ -139,7 +139,7 @@ class Matcher():
 				row.append("NA")
 		row.append(met)
 		row.append(self.__binaryMatch__(self.Necropsy, line, "biopsy"))
-		return ",".join(row)
+		return row
 
 #-----------------------------------------------------------------------------
 
@@ -192,7 +192,7 @@ def getDescription(infile, outfile, c):
 									res = matcher.parseLine(row, age, True)
 								if res.count("NA") < len(res):
 									found += 1
-									output.write(("{},{}\n").format(ID, res))
+									output.write(("{},{}\n").format(ID, ",".join(row)))
 									if res.count("NA") == 0:
 										complete += 1
 				else:
