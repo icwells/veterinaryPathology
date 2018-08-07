@@ -1,4 +1,4 @@
-'''This script will extract summary data for species at least 100 records'''
+'''This script will extract summary data for species  at least a given number o records'''
 
 from argparse import ArgumentParser
 from datetime import datetime
@@ -63,7 +63,7 @@ def getSpeciesSummaries(infile, species, col, d):
 				first = False
 	return records
 
-def getTargetSpecies(infile):
+def getTargetSpecies(infile, m):
 	# Returns list of species with at least 100 entries
 	totals = {}
 	species = []
@@ -84,7 +84,7 @@ def getTargetSpecies(infile):
 				col = Columns(line.split(d))
 				first = False
 	for i in totals.keys():
-		if totals[i] >= 100:
+		if totals[i] >= m:
 			species.append(i)
 	return species, col, d
 
@@ -98,12 +98,14 @@ def checkArgs(args):
 def main():
 	start = datetime.now()
 	parser = ArgumentParser(
-"This script will extract summary data for species at least 100 records.")
+"This script will extract summary data for species with at least a given number of records.")
+	parser.add_argument("-m", type = int, default = 100,
+help = "Minimum number of records (default = 100).")
 	parser.add_argument("-i", help = "Path to input file.")
 	parser.add_argument("-o", help = "Path to output csv.")
 	args = parser.parse_args()
 	checkArgs(args)
-	species, col, d = getTargetSpecies(args.i)
+	species, col, d = getTargetSpecies(args.i, args.m)
 	records = getSpeciesSummaries(args.i, species, col, d)
 	writeRecords(args.o, records)
 	printRuntime(start)

@@ -72,3 +72,35 @@ This script will count the number of cancer occurances per species and per datab
 	-m M		Path to merged MSU file.
 	-z Z		Path to ZEPS species count file (with scientific names).
 	-o O		Path to output file.
+
+### summarizeRates.py  
+This script will extract summary data for species with at least a given number of records.  
+
+	-h, --help	show this help message and exit
+	-m M		Minimum number of records (default = 100).
+	-i I		Path to input file.
+	-o O		Path to output csv.
+
+### checkAccounts.py  
+This script will extract/replace/remove lines from a file for given accounts.  
+
+	-h, --help	show this help message and exit
+	-r R		Accounts to be removed (either a text file or a comma seperated string).
+	-a A		Path to file containing corrected account names to replace existing names.
+	-i I		Path to input file.
+	-o O		Path to output file (provide to extract account names for manual curration).
+
+### repeatEntries.py  
+This script will attempt to identify entries from NWZP which have multiple entries over time.
+
+	-h, --help	show this help message and exit
+	-i I		Path to NWZP file.
+	-o O		Path to output file
+
+### sortUpload.py  
+This script will assemble an upload file for the comparative oncology database.
+
+	-h, --help	show this help message and exit
+	-i I		Path to full record file.
+	-o O		Path to output csv (will append to existing file).
+
