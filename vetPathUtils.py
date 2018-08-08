@@ -1,6 +1,7 @@
 '''This script contains common functions for parsing the veterinary pathology database'''
 
 from datetime import datetime
+from unixpath import getFileName
 
 class Columns():
 
@@ -88,6 +89,95 @@ class Columns():
 				self.Code = idx
 				indeces.append(idx)
 		self.Max = max(indeces)
+
+#-----------------------------------------------------------------------------
+
+class LHcolumns():
+
+	def __init__(self, header, infile):
+		# This defines class for storing column numbers for life history trait files
+		self.Species = None
+		self.Fmat = None
+		self.Mmat = None
+		self.Gest = None
+		self.Wean = None
+		self.Litter = None
+		self.LRate = None
+		self.ILI = None
+		self.Bweight = None
+		self.Wweight = None
+		self.Aweight = None
+		self.Grate = None
+		self.Long = None
+		self.MR = None
+		self.Max = None
+		self.Source = None
+		self.List = [self.Species, self.Fmat, self.Mmat, self.Gest, self.Wean, self.Litter, 
+self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long, self.MR, self.Source]
+		self.__setColumns__(header)
+		self.__setSource__(infile)
+
+	def __setColumns__(self, header):
+		indeces = []
+		for idx, i in enumerate(header):
+			i = i.strip().lower()
+			if "species" in i:
+				self.Species = idx
+				indeces.append(idx
+			elif "femalematurity" in i.replace("_", "") or i == "23-1_sexualmaturityage_d":
+				self.Fmat = idx
+				indeces.append(idx
+			elif "malematurity" in i.replace("_", "") or i == "23-1_sexualmaturityage_d":
+				self.Mmat = idx
+				indeces.append(idx
+			elif "gestation" in i.lower():
+				self.Gest = idx
+				indeces.append(idx
+			elif "weaningweight" in i.replace(" ", ""),repalce("_", ""):
+				self.Wweight = idx
+				indeces.append(idx
+			elif "weaning" in i:
+				self.Wean = idx
+				indeces.append(idx
+			elif "litter" in i and "size" in i:
+				self.Litter = idx
+				indeces.append(idx
+			elif "litters" in i and "year" in i:
+				self.LRate = idx
+				indeces.append(idx
+			elif "interbirth" in i:
+				self.ILI = idx
+				indeces.append(idx
+			elif ("birth" in i and "weight" in i) or i == "5-3_neonatebodymass_g":
+				self.Bweight = idx
+				indeces.append(idx
+			elif "adult" in i and ("weight" in i or "mass" in i):
+				self.Aweight = idx
+				indeces.append(idx
+			elif "growth rate" in i:
+				self.Grate = idx
+				indeces.append(idx
+			elif "max" in i and "longevity" in i:
+				self.Long = idx
+				indeces.append(idx
+			elif "met" in i and "rate" in i:
+				self.MR = idx
+				indeces.append(idx
+		self.Max = max(indeces)
+
+	def __setSource__(self, infile):
+		# Sets source name from input file name
+		name = getFileName(infile)
+		name = name.lower()
+		if "anage" in name:
+			self.Source = "anAge"
+		elif "pantheria" in name:
+			self.Source = "panTHERIA"
+		elif "amniote" in name:
+			self.Source = "Amniote"
+		if not self.Source:
+			print("\n\t[Error] Cannot find saurce name in filename. Exiting.\n")
+			quit()
 
 #-----------------------------------------------------------------------------
 
