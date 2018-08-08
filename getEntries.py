@@ -17,9 +17,8 @@ def findMatch(c, val):
 				return True
 	return False	
 
-def extractLines(infile, col, val, outfile=None):
+def extractLines(negate, infile, col, val, outfile=None):
 	# Counts unique entries in col
-	x = 0
 	first = True
 	total = 0
 	matches = []
@@ -30,9 +29,10 @@ def extractLines(infile, col, val, outfile=None):
 				spli = line.split(delim)
 				if len(spli) > col:
 					match = findMatch(spli[col].strip(), val)
-					if match == True:
+					if match == True and negate == False:
 						matches.append(line)
-						x += 1
+					elif match == False and negate == True:
+						matches.append(line)
 			else:
 				delim = getDelim(line)
 				matches.append(line)
@@ -41,7 +41,7 @@ def extractLines(infile, col, val, outfile=None):
 		with open(outfile, "w") as out:
 			for i in matches:
 				out.write(i)
-	return x, total
+	return len(matches), total
 
 def countUnique(infile, col):
 	# Counts unique entries in col
@@ -131,6 +131,8 @@ def checkArgs(args):
 def main():
 	parser = ArgumentParser("This script can be used to count the number of \
 unique entries found in a given column of a file, extract values from a given column, or identify multiple entries.")
+	parser.add_argument("--negate", action = "store_true", default = False,
+help = "Identify entries that do not equal values.")
 	parser.add_argument("-c", type = int, default = -1,
 help = "Column number to analyze.")
 	parser.add_argument("-v", help = "Value from column c to extract (leave blank to count).")
@@ -154,7 +156,7 @@ help = "Writes entries with no entry in column c to output file (will append to 
 			print(("\n\tIdentified {} entries with missing values from {} total entries.\n").format(x, t))
 	elif args.v:
 		print(("\n\tExtracting entries with column {} equal to {}...").format(args.c, args.v))
-		x, t = extractLines(args.i, args.c, args.v, args.o)
+		x, t = extractLines(args.negate, args.i, args.c, args.v, args.o)
 		print(("\tExtracted {} entries from {} total entries.\n").format(x, t))
 	else:
 		print(("\n\tGetting unique entries from column {}...").format(args.c))
