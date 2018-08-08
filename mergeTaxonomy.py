@@ -3,7 +3,7 @@
 import os
 from datetime import datetime
 from argparse import ArgumentParser
-from vetPathUtils import printError, getDelim
+from vetPathUtils import *
 
 BLANKRECORD = ["NA","NA","NA","NA","NA","NA","NA","NA","NA"]
 
@@ -40,8 +40,8 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 	with open(outfile, "w") as output:
 		with open(infile, "r") as f:
 			for line in f:
-				total += 1
 				if first == False:
+					total += 1
 					r = BLANKRECORD
 					line = line.strip().split(",")
 					if len(line) >= 7:
@@ -69,8 +69,8 @@ def sortZEPS(taxa, rec, infile, outfile):
 	with open(outfile, "w") as output:
 		with open(infile, "r") as f:
 			for line in f:
-				total += 1
 				if first == False:
+					total += 1
 					r = BLANKRECORD
 					line = line.strip().split(delim)
 					if len(line) == 6:
@@ -108,8 +108,8 @@ def sortMSU(taxa, rec, infile, outfile):
 	with open(outfile, "w") as output:
 		with open(infile, "r") as f:
 			for line in f:
-				total += 1
 				if first == False:
+					total += 1
 					r = BLANKRECORD
 					line = line.strip().split(delim)
 					if len(line) >= 6:
@@ -132,6 +132,37 @@ def sortMSU(taxa, rec, infile, outfile):
 Kingdom,Phylum,Class,Order,Family,Genus,Days,Age(months),Sex,Castrated,Location,Type,\
 Malignant,PrimaryTumor,Metastasis,Necropsy,Diagnosis\n")
 					delim = getDelim(line)
+					first = False
+	printTotal(count, total)
+
+def sortDLC(cancer, taxa, infile, outfile):
+	# Merges duke data with taxonomy
+	first = True
+	count = 0
+	total = 0
+	print("\n\tMerging Duke taxonomy data...")
+	with open(outfile, "w") as output:
+		with open(infile, "r") as f:
+			for line in f:
+				if first == False:
+					total += 1
+					line = line.strip().split(d)
+					if len(line) >= c.Max:
+						if cancer == False or line[c.Code] == "Yes":
+							n = line[c.Species]
+							if n in taxa.keys():
+								row = [line[c.Submitter], line[c.ID], n]
+								row.extend(taxa[n][:-1])
+								row.extend([line[c.Age], line[c.Sex]])
+								row.extend(line[c.Age+1:])
+								if row:
+									output.write(",".join(row) + "\n")
+									count += 1
+				else:
+					output.write("Institution,ID,ScientificName,Kingdom,Phylum,Class,Order,Family,Genus,\
+Age(months),Sex,CancerY/N,CancerType,Tissue,Metastatic,Widespread,DeathViaCancer,Old/NewWorld,CommonName\n")
+					d = getDelim(line)
+					c = Columns(line.split(d))
 					first = False
 	printTotal(count, total)
 
@@ -200,9 +231,10 @@ def main():
 	parser = ArgumentParser("This script will concatenate a given \
 database with Kestrel taxonomy results and diagnosis records.")
 	parser.add_argument("--cancer", action = "store_true", default = False,
-help = "Only extracts and concatenates cancer records (NWZP only; extracts all records by default).")
-	parser.add_argument("-n", help = "Path to NWZP file (utf-8 encoded).")
+help = "Only extracts and concatenates cancer records (NWZP/DLC only; extracts all records by default).")
+	parser.add_argument("-d", help = "Path to Duke Lemur Center file (utf-8 encoded).")
 	parser.add_argument("-m", help = "Path to MSU file (utf-8 encoded).")
+	parser.add_argument("-n", help = "Path to NWZP file (utf-8 encoded).")
 	parser.add_argument("-z", help = "Path to ZEPS file (utf-8 encoded).")
 	parser.add_argument("-t", help = "Path to taxonomy file.")
 	parser.add_argument("-r", default = None,
@@ -215,10 +247,12 @@ help = "Path to records file with age, sex, and cancer type (NWZP only; not requ
 	rec = None
 	if args.r:
 		rec = getRecords(args.r)
-	if args.n:
-		sortNWZP(args.cancer, taxa, rec, args.n, args.o)
+	if args.d:
+		sortDLC(args.cancer, taxa, args.d, args.o)
 	elif args.m:
 		sortMSU(taxa, rec, args.m, args.o)
+	elif args.n:
+		sortNWZP(args.cancer, taxa, rec, args.n, args.o)
 	elif args.z:
 		sortZEPS(taxa, rec, args.z, args.o)
 	print(("\n\tFinished. Runtime: {}\n").format(datetime.now() - start))

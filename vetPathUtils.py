@@ -33,13 +33,13 @@ class Columns():
 		indeces = []
 		for idx, i in enumerate(header):
 			i = i.strip()
-			if i == "ID":
+			if i == "ID" or i == "Origin ID":
 				self.ID = idx
 				indeces.append(idx)
-			elif i == "CommonName" or i == "Breed":
+			elif i.replace(" ", "") == "CommonName" or i == "Breed":
 				self.Common = idx
 				indeces.append(idx)
-			elif i == "ScientificName":
+			elif i == "ScientificName" or i == "Binomial Scientific":
 				self.Species = idx
 				indeces.append(idx)
 			elif i == "Age(months)" or i == "Age":
@@ -54,22 +54,22 @@ class Columns():
 			elif i == "Castrated":
 				self.Castrated = idx
 				indeces.append(idx)
-			elif i == "Location":
+			elif i == "Location" or i == "Tissue":
 				self.Location = idx
 				indeces.append(idx)
-			elif i == "CancerType" or i == "Type":
+			elif i.replace(" ", "") == "CancerType" or i == "Type":
 				self.Type = idx
 				indeces.append(idx)
 			elif i == "PrimaryTumor" or i == "Primary":
 				self.Primary = idx
 				indeces.append(idx)
-			elif i == "Metastasis":
+			elif i == "Metastasis" or i == "Metastatic":
 				self.Metastasis = idx
 				indeces.append(idx)
 			elif i == "Malignant":
 				self.Malignant = idx
 				indeces.append(idx)
-			elif i == "Necropsy":
+			elif i == "Necropsy" or i == "Death via Cancer Y/N":
 				self.Necropsy = idx
 				indeces.append(idx)
 			elif "Date" in i:
@@ -81,10 +81,10 @@ class Columns():
 			elif i == "Account":
 				self.Account = idx
 				indeces.append(idx)
-			elif i == "Client" or i == "Owner":
+			elif i == "Client" or i == "Owner" or i == "Institution ID":
 				self.Submitter = idx
 				indeces.append(idx)
-			elif i == "Code":
+			elif i == "Code" or i.replace(" ", "") == "CancerY/N":
 				self.Code = idx
 				indeces.append(idx)
 		self.Max = max(indeces)
@@ -101,7 +101,7 @@ def getDelim(line):
 def getService(infile):
 	# Returns service name from file name
 	f = infile.upper()
-	for i in ["NWZP", "MSU", "ZEPS"]:
+	for i in ["DLC", "NWZP", "MSU", "ZEPS"]:
 		if i in f:
 			return i
 	if "testgood" in infile:
