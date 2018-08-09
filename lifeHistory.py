@@ -11,42 +11,57 @@ def extractTraits(infile, outfile, done):
 	first = True
 	total = 0
 	count = 0
+	updated = 0
+	prev = len(done.keys())
 	print("\tExtracting traits from input file...")
-	with open(outfile, "a") as out:
+	with open(outfile, "w") as out:
 		with open(infile, "r") as f:
 			for line in f:
 				if first == False:
 					total += 1
 					s = line.split(d)
 					if len(s) > c.Max:
-						row = c.formatLine(s)
-						if row.count("NA") < len(row):
+						species = s[c.Genus].title() + " " + s[c.Species].lower()
+						if species in done.keys():
+							# Update existing missing cells with data from new file
+							row, up = c.updateEntry(s, done[species], species)
 							out.write((",").join(row) + "\n")
-							count += 1
+							del done[species]
+							if up == True:
+								updated += 1
+						else:
+							# Format new entry
+							row = c.formatLine(s, species)
+							if row.count("NA") < len(row)-2:
+								out.write((",").join(row) + "\n")
+								count += 1
 				else:
 					d = getDelim(line)
 					c = LHcolumns(line.split(d), infile)
 					first = False
+					out.write("Species,FemaleMaturity(days),MaleMaturity(days),Gestation/Incubation(days),\
+Weaning(days),Litter/ClutchSize,LittersPerYear,InterbirthInterval,BirthWeight(g),WeaningWeight(g),\
+AdultWeight(g),GrowthRate(1/days),MaximumLongevity(yrs),MetabolicRate(W),Source\n")
+		for i in done.keys():
+			# Print unmatched previous entries
+			out.write(("{},{}\n").format(i, (",").join(done[i])))
 	print(("\tExtracted traits for {} species from {} total entries.").format(count, total))
+	print(("\tUpdated {} of {} existing entries.").format(updated, prev))
 
 def checkOutput(outfile):
 	# Makes new ouput file or reads species from existing file
-	done = []
+	done = {}
 	first = True
+	print("\n\tChecking for previous output...")
 	if os.path.isfile(outfile):
-		print("\n\tGetting previous output...")
 		with open(outfile, "r") as f:
-			if first == False:
-				done.append(line.split(",")[0])
-			else:
-				first = False
-		print(("\tFound entries from {} species.").format(len(done)))
-	else:
-		print("\n\tInitializing output file...")
-		with open(outfile, "w") as out:
-			out.write("Species,FemaleMaturity(days),MaleMaturity(days),Gestation/Incubation(days),\
-Weaning(days),Litter/ClutchSize,LittersPerYear,InterbirthInterval,BirthWeight(g),WeaningWeight(g),\
-AdultWeight(g),GrowthRate(1/days),MaximumLongevity(yrs),MetabolicRate(W),Source\n")
+			for line in f:
+				if first == False:
+					s = line.strip().split(",")
+					done[s[0]] = s[1:]
+				else:
+					first = False
+		print(("\tFound entries from {} species.").format(len(done.keys())))
 	return done
 
 def checkArgs(args):

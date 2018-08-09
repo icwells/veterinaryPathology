@@ -170,7 +170,7 @@ class LHcolumns():
 			self.Mmat = self.Fmat
 		self.Max = max(indeces)
 		self.List = [self.Fmat, self.Mmat, self.Gest, self.Wean, self.Litter, 
-self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long, self.MR]
+self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long]
 
 	def __setSource__(self, infile):
 		# Sets source name from input file name
@@ -186,21 +186,76 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 			print("\n\t[Error] Cannot find source name in filename. Exiting.\n")
 			quit()
 
-	def formatLine(self, line):
+	def formatLine(self, line, species = None):
 		# Returns formatted row for writing
 		row = []
-		g = line[self.Genus]
-		s = line[self.Species]
-		row.append(g.title() + " " + s.lower())
+		if not species:
+			g = line[self.Genus]
+			s = line[self.Species]
+			species = g.title() + " " + s.lower()
+		row.append(species)
 		for i in self.List:
 			if i and len(line[i]) > 1 and line[i] != "-999":
-				row.append(line[i])
+				try:
+					# Make sure entry is a number
+					n = float(line[i])
+					row.append(line[i])
+				except ValueError:
+					row.append("NA")
 			else:
 				row.append("NA")
+		if self.MR and len(line[self.MR]) > 1 and line[self.MR] != "-999":
+			# Convert metabolic rate to watts if needed
+			if self.Source == "Amniote":
+				row.append(literAtmoToW(line[self.MR]))
+			else:
+				row.append(line[self.MR])
+		else:
+			row.append("NA")
 		row.append(self.Source)
 		return row
 
+	def updateEntry(self, line, entry, species):
+		# Replaces NA values in entry with values from line
+		row = []
+		row.append(species)
+		updated = False
+		for idx, i in enumerate(self.List):
+			if entry[idx] != "NA":
+				row.append(entry[idx])
+			elif i and len(line[i]) > 1 and line[i] != "-999":
+				try:
+					# Make sure entry is a number
+					n = float(line[i])
+					row.append(line[i])
+					updated = True
+				except ValueError:
+					row.append("NA")
+			else:
+				row.append("NA")
+		if entry[-2] != "NA":
+			row.append(entry[-2])
+		elif self.MR and len(line[self.MR]) > 1 and line[self.MR] != "-999":
+			# Convert metabolic rate to watts if needed
+			if self.Source == "Amniote":
+				row.append(literAtmoToW(line[self.MR]))
+			else:
+				row.append(line[self.MR])
+		else:
+			row.append("NA")
+		if updated == True:
+			# Record both sources
+			row.append(entry[-1] + "/" + self.Source)
+		else:
+			row.append(entry[-1])
+		return row, updated
+
 #-----------------------------------------------------------------------------
+
+def literAtmoToW(v):
+	# Converts liters of atmosphere/min to watts
+	v = float(v)
+	return str(v*1.68875)
 
 def getDelim(line):
 	# Returns delimiter
