@@ -9,6 +9,7 @@ class Columns():
 		# Defines a class for identifying and storing column numbers
 		self.Service = service
 		self.ID = None
+		self.Genus = None
 		self.Species = None
 		self.Common = None
 		self.Age = None
@@ -112,8 +113,6 @@ class LHcolumns():
 		self.MR = None
 		self.Max = None
 		self.Source = None
-		self.List = [self.Species, self.Fmat, self.Mmat, self.Gest, self.Wean, self.Litter, 
-self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long, self.MR, self.Source]
 		self.__setColumns__(header)
 		self.__setSource__(infile)
 
@@ -121,49 +120,57 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 		indeces = []
 		for idx, i in enumerate(header):
 			i = i.strip().lower()
-			if "species" in i:
+			if "genus" in i:
+				self.Genus = idx
+				indeces.append(idx)
+			elif "species" in i and "sub" not in i:
 				self.Species = idx
-				indeces.append(idx
-			elif "femalematurity" in i.replace("_", "") or i == "23-1_sexualmaturityage_d":
+				indeces.append(idx)
+			elif "female maturity" in i.replace("_", " ") or i == "23-1_sexualmaturityage_d":
 				self.Fmat = idx
-				indeces.append(idx
-			elif "malematurity" in i.replace("_", "") or i == "23-1_sexualmaturityage_d":
+				indeces.append(idx)
+			elif "male maturity" in i.replace("_", " "):
 				self.Mmat = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "gestation" in i.lower():
 				self.Gest = idx
-				indeces.append(idx
-			elif "weaningweight" in i.replace(" ", ""),repalce("_", ""):
+				indeces.append(idx)
+			elif "weaningweight" in i.replace(" ", "").replace("_", ""):
 				self.Wweight = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "weaning" in i:
 				self.Wean = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "litter" in i and "size" in i:
 				self.Litter = idx
-				indeces.append(idx
-			elif "litters" in i and "year" in i:
+				indeces.append(idx)
+			elif "litters" in i and ("year" in i or "per_y" in i):
 				self.LRate = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "interbirth" in i:
 				self.ILI = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif ("birth" in i and "weight" in i) or i == "5-3_neonatebodymass_g":
 				self.Bweight = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "adult" in i and ("weight" in i or "mass" in i):
 				self.Aweight = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "growth rate" in i:
 				self.Grate = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "max" in i and "longevity" in i:
 				self.Long = idx
-				indeces.append(idx
+				indeces.append(idx)
 			elif "met" in i and "rate" in i:
 				self.MR = idx
-				indeces.append(idx
+				indeces.append(idx)
+		if self.Fmat and not self.Mmat:
+			# Get assign same maturity age if it is only given for adults
+			self.Mmat = self.Fmat
 		self.Max = max(indeces)
+		self.List = [self.Fmat, self.Mmat, self.Gest, self.Wean, self.Litter, 
+self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long, self.MR]
 
 	def __setSource__(self, infile):
 		# Sets source name from input file name
@@ -176,8 +183,22 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 		elif "amniote" in name:
 			self.Source = "Amniote"
 		if not self.Source:
-			print("\n\t[Error] Cannot find saurce name in filename. Exiting.\n")
+			print("\n\t[Error] Cannot find source name in filename. Exiting.\n")
 			quit()
+
+	def formatLine(self, line):
+		# Returns formatted row for writing
+		row = []
+		g = line[self.Genus]
+		s = line[self.Species]
+		row.append(g.title() + " " + s.lower())
+		for i in self.List:
+			if i and len(line[i]) > 1 and line[i] != "-999":
+				row.append(line[i])
+			else:
+				row.append("NA")
+		row.append(self.Source)
+		return row
 
 #-----------------------------------------------------------------------------
 

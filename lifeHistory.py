@@ -11,21 +11,27 @@ def extractTraits(infile, outfile, done):
 	first = True
 	total = 0
 	count = 0
-	print("\nExtracting traits from input file...")
-	with open(outfile, "w") as out:
+	print("\tExtracting traits from input file...")
+	with open(outfile, "a") as out:
 		with open(infile, "r") as f:
 			for line in f:
 				if first == False:
-
+					total += 1
+					s = line.split(d)
+					if len(s) > c.Max:
+						row = c.formatLine(s)
+						if row.count("NA") < len(row):
+							out.write((",").join(row) + "\n")
+							count += 1
 				else:
 					d = getDelim(line)
 					c = LHcolumns(line.split(d), infile)
 					first = False
-	print(("Extracted traits for {} species from {} total entries.").format(count, total))
+	print(("\tExtracted traits for {} species from {} total entries.").format(count, total))
 
 def checkOutput(outfile):
 	# Makes new ouput file or reads species from existing file
-	out = []
+	done = []
 	first = True
 	if os.path.isfile(outfile):
 		print("\n\tGetting previous output...")
