@@ -4,7 +4,20 @@ import os
 from datetime import datetime
 from argparse import ArgumentParser
 from unixpath import *
+from lhColumns import *
 from vetPathUtils import *
+
+def getSpeciesName(c, s):
+	# Returns formatted species name
+	if "_" in s[c.Species]:
+		g, sp = s[c.Species].split("_")
+	elif " " in s[c.Species]:
+		g, sp = s[c.Species].split()
+	else:
+		g = s[c.Genus]
+		sp = s[c.Species]
+	# Get binonial name with first letter in caps
+	return g.title() + " " + sp.lower()
 
 def extractTraits(infile, outfile, done):
 	# Extracts target traits from input file
@@ -21,27 +34,28 @@ def extractTraits(infile, outfile, done):
 					total += 1
 					s = line.split(d)
 					if len(s) > c.Max:
-						species = s[c.Genus].title() + " " + s[c.Species].lower()
-						if species in done.keys():
-							# Update existing missing cells with data from new file
-							row, up = c.updateEntry(s, done[species], species)
-							out.write((",").join(row) + "\n")
-							del done[species]
-							if up == True:
-								updated += 1
-						else:
-							# Format new entry
-							row = c.formatLine(s, species)
-							if row.count("NA") < len(row)-2:
+						species = getSpeciesName(c, s)
+						if len(species.split()) == 2:
+							if species in done.keys():
+								# Update existing missing cells with data from new file
+								row, up = c.updateEntry(s, done[species], species)
 								out.write((",").join(row) + "\n")
-								count += 1
+								del done[species]
+								if up == True:
+									updated += 1
+							else:
+								# Format new entry
+								row = c.formatLine(s, species)
+								if row.count("NA") < len(row)-2:
+									out.write((",").join(row) + "\n")
+									count += 1
 				else:
 					d = getDelim(line)
 					c = LHcolumns(line.split(d), infile)
 					first = False
 					out.write("Species,FemaleMaturity(days),MaleMaturity(days),Gestation/Incubation(days),\
 Weaning(days),Litter/ClutchSize,LittersPerYear,InterbirthInterval,BirthWeight(g),WeaningWeight(g),\
-AdultWeight(g),GrowthRate(1/days),MaximumLongevity(yrs),MetabolicRate(W),Source\n")
+AdultWeight(g),GrowthRate(1/days),MaximumLongevity(months),MetabolicRate(W),Source\n")
 		for i in done.keys():
 			# Print unmatched previous entries
 			out.write(("{},{}\n").format(i, (",").join(done[i])))

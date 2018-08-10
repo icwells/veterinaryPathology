@@ -1,9 +1,12 @@
 '''This script defines a class for formatting data from life history files'''
 
+from unixpath import getFileName
+
 class LHcolumns():
 
 	def __init__(self, header, infile):
 		# This defines class for storing column numbers and units for life history trait files
+		self.Genus = None
 		self.Species = None
 		self.Fmat = None
 		self.Mmat = None
@@ -23,14 +26,17 @@ class LHcolumns():
 		self.__setColumns__(header)
 		self.__setSource__(infile)
 
-	def __setUnits__(i):
+	def __setUnits__(self, i):
 		# Returns units from field
 		if "days" in i or "_d" in i:
 			return "d"
 		elif "(mo)" in i or "_m" in i:
 			return "m"
 		elif "yrs" in i or "_y" in i:
-			return "y"		
+			return "y"	
+		elif self.Source == "Barton":
+			# Return months for Barton gestation
+			return "m"	
 
 	def __setColumns__(self, header):
 		indeces = []
@@ -39,7 +45,7 @@ class LHcolumns():
 			if "genus" in i:
 				self.Genus = idx
 				indeces.append(idx)
-			elif "species" in i and not self.Species:
+			elif "species" in i and "sub" not in i:
 				# Get first species entry
 				self.Species = idx
 				indeces.append(idx)
@@ -90,7 +96,7 @@ class LHcolumns():
 			self.Mmat = self.Fmat
 		self.Max = max(indeces)
 		self.List = [self.Fmat, self.Mmat, self.Gest, self.Wean, self.Litter, 
-self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long]
+self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self.Long, self.MR]
 
 	def __setSource__(self, infile):
 		# Sets source name from input file name
@@ -112,9 +118,49 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 			print("\n\t[Error] Cannot find source name in filename. Exiting.\n")
 			quit()
 
-	def __getConvertedUnit__(self, key, line):
+#-----------------------------------------------------------------------------
+
+	def __literAtmoToW__(self, v):
+		# Converts liters of atmosphere/min to watts
+		v = float(v)
+		return str(v*1.68875)
+
+	def __getConvertedUnit__(self, idx, line):
 		# Returns converted value if necessary
-		
+		if idx[0] and len(line[idx[0]]) > 1 and line[idx[0]] != "-999":
+			if idx[1] == idx[2]:
+				# Return unformatted value if it is in the output unit
+				return line[idx[0]]
+			else:
+				try:
+					# Make sure entry is a number
+					n = float(line[idx[0]])
+					if idx[2] == "d" and idx[1] == "m":
+						# Convert months to days
+						return str(n*30)
+					elif idx[2] == "m" and idx[1] == "y":
+						# Convert years to months
+						return str(n*12)
+				except ValueError:
+					pass
+		return "NA"
+
+	def __getValue__(self, idx, line):
+		# Returns value from line
+		ret = "NA"
+		if idx:
+			v = line[idx]
+			if len(v) > 1 and v != "-999":
+				try:
+					# Make sure entry is a number
+					n = float(v)
+					ret = v
+					if idx == self.MR and self.Source == "Amniote":
+						# Convert metabolic rate to watts
+						ret = self.__literAtmoToW__(v)
+				except ValueError:
+					pass
+		return ret
 
 	def formatLine(self, line, species = None):
 		# Returns formatted row for writing
@@ -127,23 +173,8 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 		for i in self.List:
 			if type(i) == list:
 				row.append(self.__getConvertedUnit__(i, line))
-			if i and len(line[i]) > 1 and line[i] != "-999":
-				try:
-					# Make sure entry is a number
-					n = float(line[i])
-					row.append(line[i])
-				except ValueError:
-					row.append("NA")
 			else:
-				row.append("NA")
-		if self.MR and len(line[self.MR]) > 1 and line[self.MR] != "-999":
-			# Convert metabolic rate to watts if needed
-			if self.Source == "Amniote":
-				row.append(literAtmoToW(line[self.MR]))
-			else:
-				row.append(line[self.MR])
-		else:
-			row.append("NA")
+				row.append(self.__getValue__(i, line))
 		row.append(self.Source)
 		return row
 
@@ -154,31 +185,18 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 		updated = False
 		for idx, i in enumerate(self.List):
 			if entry[idx] != "NA":
-				row.append(entry[idx])
-			elif i and len(line[i]) > 1 and line[i] != "-999":
-				try:
-					# Make sure entry is a number
-					n = float(line[i])
-					row.append(line[i])
-					updated = True
-				except ValueError:
-					row.append("NA")
+				# Keep existing value
+				val = entry[idx]
+			elif type(i) == list:
+				val = self.__getConvertedUnit__(i, line)
 			else:
-				row.append("NA")
-		if entry[-2] != "NA":
-			row.append(entry[-2])
-		elif self.MR and len(line[self.MR]) > 1 and line[self.MR] != "-999":
-			# Convert metabolic rate to watts if needed
-			if self.Source == "Amniote":
-				row.append(literAtmoToW(line[self.MR]))
-			else:
-				row.append(line[self.MR])
-		else:
-			row.append("NA")
+				val = self.__getValue__(i, line)
+			if val != "NA":
+				updated = True
+			row.append(val)
 		if updated == True:
 			# Record both sources
 			row.append(entry[-1] + "/" + self.Source)
 		else:
 			row.append(entry[-1])
 		return row, updated
-
