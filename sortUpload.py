@@ -6,9 +6,9 @@ from vetPathUtils import *
 
 def getBinary(val):
 	# Returns SMALLINT value for binary fields
-	if val == "Y":
+	if val == "Y" or val == "yes":
 		return "1"
-	elif val == "N":
+	elif val == "N" or val == "No":
 		return "0"
 	else:
 		return "-1"
@@ -24,34 +24,49 @@ def checkAge(age):
 		except ValueError:
 			return "-1"
 
+def checkSex(val):
+	# Returns male/female/NA
+	if val != "NA":
+		val = val.lower()
+		if val != "male" and val != "female":
+			if val == "m":
+				val = "male"
+			elif val == "f":
+				val = "female"
+	return val	
+
+def subsetLine(idx, line):
+	# Returns line item if index is valid
+	ret = "NA"
+	if idx and len(line[idx]) > 1:
+		ret = line[idx]
+	return ret
+
 def formatLine(col, line):
 	# Return line formatted for writing to outfile
 	row = []
 	if len(line) >= col.Max and line[col.Species].upper() != "NA":
-		row.append(line[col.Sex])
-		row.append(checkAge(line[col.Age]))
-		row.append(getBinary(line[col.Castrated]))
-		row.append(line[col.ID])
-		row.append(line[col.Species])
-		row.append(line[col.Date])
-		row.append(line[col.Comments])
+		row.append(checkSex(subsetLine(col.Sex, line)))
+		row.append(checkAge(subsetLine(col.Age, line)))
+		row.append(getBinary(subsetLine(col.Castrated, line)))
+		row.append(subsetLine(col.ID, line))
+		row.append(subsetLine(col.Species, line))
+		row.append(subsetLine(col.Date, line))
+		row.append(subsetLine(col.Comments, line))
 		# Masspresent
 		if line[col.Type] != "NA":
 			row.append("1")
 		else:
 			row.append("0")
-		row.append(getBinary(line[col.Necropsy]))
-		row.append(getBinary(line[col.Metastasis]))
-		row.append(line[col.Type])
-		row.append(line[col.Location])
-		row.append(getBinary(line[col.Primary]))
-		row.append(getBinary(line[col.Malignant]))
+		row.append(getBinary(subsetLine(col.Necropsy, line)))
+		row.append(getBinary(subsetLine(col.Metastasis, line)))
+		row.append(subsetLine(col.Type, line))
+		row.append(subsetLine(col.Location, line))
+		row.append(getBinary(subsetLine(col.Primary, line)))
+		row.append(getBinary(subsetLine(col.Malignant, line)))
 		row.append(col.Service)
-		if col.Account:
-			row.append(line[col.Account])
-		else:
-			row.append("NA")
-		row.append(line[col.Submitter])
+		row.append(subsetLine(col.Account, line))
+		row.append(subsetLine(col.Submitter, line))
 	return ",".join(row)
 
 def checkOutfile(outfile):
