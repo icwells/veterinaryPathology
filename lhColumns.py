@@ -128,7 +128,7 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 	def __getConvertedUnit__(self, idx, line):
 		# Returns converted value if necessary
 		if idx[0] and len(line[idx[0]]) > 1 and line[idx[0]] != "-999":
-			if idx[1] == idx[2]:
+			if idx[1] == "m":
 				# Return unformatted value if it is in the output unit
 				return line[idx[0]]
 			else:
