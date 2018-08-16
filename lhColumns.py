@@ -10,8 +10,8 @@ class LHcolumns():
 		self.Species = None
 		self.Fmat = None
 		self.Mmat = None
-		self.Gest = [None, None, "d"]
-		self.Wean = [None, None, "d"]
+		self.Gest = [None, None]
+		self.Wean = [None, None]
 		self.Litter = None
 		self.LRate = None
 		self.ILI = None
@@ -19,7 +19,7 @@ class LHcolumns():
 		self.Wweight = None
 		self.Aweight = None
 		self.Grate = None
-		self.Long = [None, None, "m"]
+		self.Long = [None, None]
 		self.MR = None
 		self.Max = None
 		self.Source = None
@@ -135,10 +135,10 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 				try:
 					# Make sure entry is a number
 					n = float(line[idx[0]])
-					if idx[2] == "d" and idx[1] == "m":
-						# Convert months to days
-						return str(n*30)
-					elif idx[2] == "m" and idx[1] == "y":
+					if idx[1] == "d":
+						# Convert days to months (denominator = 365/12)
+						return str(n/30.42)
+					elif idx[1] == "y":
 						# Convert years to months
 						return str(n*12)
 				except ValueError:

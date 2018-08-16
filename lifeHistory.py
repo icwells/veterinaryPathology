@@ -53,8 +53,8 @@ def extractTraits(infile, outfile, done):
 					d = getDelim(line)
 					c = LHcolumns(line.split(d), infile)
 					first = False
-					out.write("Species,FemaleMaturity(days),MaleMaturity(days),Gestation/Incubation(days),\
-Weaning(days),Litter/ClutchSize,LittersPerYear,InterbirthInterval,BirthWeight(g),WeaningWeight(g),\
+					out.write("Species,FemaleMaturity(months),MaleMaturity(months),Gestation/Incubation(months),\
+Weaning(months),Litter/ClutchSize,LittersPerYear,InterbirthInterval,BirthWeight(g),WeaningWeight(g),\
 AdultWeight(g),GrowthRate(1/days),MaximumLongevity(months),MetabolicRate(W),Source\n")
 		for i in done.keys():
 			# Print unmatched previous entries
