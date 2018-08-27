@@ -5,6 +5,20 @@ import os
 from argparse import ArgumentParser
 from vetPathUtils import printError, getDelim
 
+def getColumn(col, row):
+	# Returns target column number
+	try:
+		# Return col if it is already and integer
+		int(col)
+		return col
+	except ValueError:
+		# Identify column number
+		for idx, i in enumerate(row):
+			i = i.strip()
+			if i == col:
+				return idx
+	printError("Cannot find target column number.")
+
 def findMatch(c, val):
 	# Identifies whole word matches
 	if c == val:
@@ -17,7 +31,7 @@ def findMatch(c, val):
 				return True
 	return False	
 
-def extractLines(negate, infile, col, val, outfile=None):
+def extractLines(negate, infile, c, val, outfile=None):
 	# Counts unique entries in col
 	first = True
 	total = 0
@@ -35,6 +49,7 @@ def extractLines(negate, infile, col, val, outfile=None):
 						matches.append(line)
 			else:
 				delim = getDelim(line)
+				col = getColumn(c, line.split(delim))
 				matches.append(line)
 				first = False
 	if outfile:
@@ -43,7 +58,7 @@ def extractLines(negate, infile, col, val, outfile=None):
 				out.write(i)
 	return len(matches), total
 
-def countUnique(infile, col):
+def countUnique(infile, c):
 	# Counts unique entries in col
 	x = set()
 	first = True
@@ -58,9 +73,10 @@ def countUnique(infile, col):
 			else:
 				first = False
 				delim = getDelim(line)
+				col = getColumn(c, line.split(delim))
 	return x, total
 
-def getTarget(infile, outfile, col, target=None):
+def getTarget(infile, outfile, c, target=None):
 	# Write entries from col with values in target to file (writes lines with no entry is target is null)
 	total = 0
 	count = 0
@@ -85,10 +101,11 @@ def getTarget(infile, outfile, col, target=None):
 							count += 1
 				else:
 					delim = getDelim(line)
+					col = getColumn(c, line.split(delim))
 					first = False
 	return count, total
 
-def identifyMultiples(infile, col):
+def identifyMultiples(infile, c):
 	# Returns a lsit of non-unique col entries
 	entries = {}
 	mult = []
@@ -105,6 +122,7 @@ def identifyMultiples(infile, col):
 						entries[spli[col]] = 1
 			else:
 				delim = getDelim(line)
+				col = getColumn(c, line.split(delim))
 				first = False
 	for i in entries.keys():
 		if entries[i] > 1:
@@ -116,8 +134,8 @@ def checkArgs(args):
 	# Identifies errors in arguments
 	if not args.i:
 		printError("Please provide an input file")
-	if args.c == -1:
-		args.c = input("\n\tPlease enter column number: ")
+	if not args.c:
+		args.c = input("\n\tPlease enter column name or number: ")
 	if args.multiple == True or args.empty == True:
 		if args.v:
 			print("\n\t[Warning] Ignoring -v argument.\n")
@@ -133,8 +151,7 @@ def main():
 unique entries found in a given column of a file, extract values from a given column, or identify multiple entries.")
 	parser.add_argument("--negate", action = "store_true", default = False,
 help = "Identify entries that do not equal values.")
-	parser.add_argument("-c", type = int, default = -1,
-help = "Column number to analyze.")
+	parser.add_argument("-c", help = "Name or number of column to analyze.")
 	parser.add_argument("-v", help = "Value from column c to extract (leave blank to count).")
 	parser.add_argument("--multiple", action = "store_true", default = False,
 help = "Writes entries with multiple occurances from column c to output file (will append to existing output file).")
