@@ -7,20 +7,23 @@ import matplotlib.pyplot as plt
 from unixpath import checkFile, getFileName
 from vetPathUtils import *
 
-def speciesHist(outfile, freq, title):
+def speciesHist(outfile, freq, title, mn):
 	# Plots histogram of species occurances
 	print("\tPlotting frequencies...")
 	#ymax = getYMax(freq)
 	# Plot frequencies on a log scale
-	plt.hist(freq, 250, facecolor = "b")
+	plt.hist(freq, int(len(freq)/10), facecolor = "b")
+	'''plt.xscale('log', nonposx="clip")
 	plt.yscale('log', nonposy="clip")
 	# Add lines for 50 and 100
-	plt.plot([50, 50], [0, 100], color = "r", linewidth = 1)
-	plt.plot([100, 100], [0, 100], color = "r", linewidth = 1)
+	plt.plot([50, 50], [0, 1000], color = "r", linewidth = 1)
+	plt.plot([100, 100], [0, 1000], color = "r", linewidth = 1)'''
 	# Add labels
 	plt.title(title)
 	plt.xlabel("Number of Records per Species")
-	plt.ylabel("Frequency (log10)")
+	plt.ylabel("Frequency")
+	txt = ("{} species contained\n>= {} entries.").format(len(freq), mn)
+	plt.annotate(txt, xy = (0.80, 0.80), xycoords="axes fraction", ha="center", va="center")
 	# Save as svg
 	plt.savefig(outfile)	
 
@@ -50,9 +53,9 @@ def getSpeciesCounts(infile, mn):
 	print(("\tIdentified {} species with at least {} entries.").format(len(freq), mn))
 	return freq
 
-def getTitle(infile):
+def getTitle(infile, mn):
 	# Returns formatted title name
-	return ("Species Frequencies in {}").format(getFileName(infile))
+	return ("Species Frequencies in {} (min >= {})").format(getFileName(infile), mn)
 
 def main():
 	start = datetime.now()
@@ -64,9 +67,9 @@ occurances for each species in a given database.")
 	args = parser.parse_args()
 	checkFile(args.infile)
 	outfile = args.infile[:args.infile.rfind(".")] + ".svg"
-	title = getTitle(args.infile)
+	title = getTitle(args.infile, args.min)
 	freq = getSpeciesCounts(args.infile, args.min)
-	speciesHist(outfile, freq, title)
+	speciesHist(outfile, freq, title, args.min)
 	printRuntime(start)
 
 if __name__ == "__main__":
