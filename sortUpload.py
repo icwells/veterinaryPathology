@@ -38,7 +38,7 @@ def checkSex(val):
 def subsetLine(idx, line):
 	# Returns line item if index is valid
 	ret = "NA"
-	if idx and len(line[idx]) > 1:
+	if idx and idx < len(line) and len(line[idx].strip()) > 1:
 		ret = line[idx]
 	return ret
 

@@ -27,7 +27,7 @@ def getAccountColumn(line, d):
 	# Returns column index of account data
 	spl = line.strip().split(d)
 	for idx,i in enumerate(spl):
-		if i == "Client" or i == "Owner":
+		if i == "Client" or i == "Owner" or i == "Submitter":
 			return idx
 	print("\n\t[Error] Cannot find account column. Exiting.\n")
 	quit()
