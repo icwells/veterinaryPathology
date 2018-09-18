@@ -38,7 +38,7 @@ def checkSex(val):
 def subsetLine(idx, line):
 	# Returns line item if index is valid
 	ret = "NA"
-	if idx and idx < len(line) and len(line[idx].strip()) > 1:
+	if idx is not None and idx < len(line) and line[idx].strip():
 		ret = line[idx]
 	return ret
 
@@ -87,9 +87,10 @@ def parseRecords(infile, outfile):
 	with open(outfile, "a") as out:
 		with open(infile, "r") as f:
 			for line in f:
+				line = line.strip()
 				if first == False:
 					total += 1
-					spl = line.strip().split(d)
+					spl = line.split(d)
 					res = formatLine(col, spl)
 					if res:
 						out.write(res + "\n")
