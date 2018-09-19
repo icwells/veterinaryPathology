@@ -4,8 +4,16 @@ import os
 from argparse import ArgumentParser
 from vetPathUtils import *
 
-def getBinary(val):
+def subsetLine(idx, line):
+	# Returns line item if index is valid
+	ret = "NA"
+	if idx is not None and idx < len(line) and line[idx].strip():
+		ret = line[idx]
+	return ret
+
+def getBinary(idx, line):
 	# Returns SMALLINT value for binary fields
+	val = subsetLine(idx, line)
 	if val == "Y" or val == "yes":
 		return "1"
 	elif val == "N" or val == "No":
@@ -13,8 +21,9 @@ def getBinary(val):
 	else:
 		return "-1"
 
-def checkAge(age):
+def checkAge(idx, line):
 	# Returns -1 if age is na
+	age = subsetLine(idx, line)
 	if age.upper() == "NA":
 		return "-1"
 	else:
@@ -24,8 +33,18 @@ def checkAge(age):
 		except ValueError:
 			return "-1"
 
-def checkSex(val):
+def checkID(idx, line):
+	# Makes sure source ID is an integer
+	val = subsetLine(idx, line)	
+	try:
+		i = int(val)
+		return val
+	except ValueError:
+		return "-1"
+
+def checkSex(idx, line):
 	# Returns male/female/NA
+	val = subsetLine(idx, line)
 	if val != "NA":
 		val = val.lower()
 		if val != "male" and val != "female":
@@ -35,21 +54,14 @@ def checkSex(val):
 				val = "female"
 	return val	
 
-def subsetLine(idx, line):
-	# Returns line item if index is valid
-	ret = "NA"
-	if idx is not None and idx < len(line) and line[idx].strip():
-		ret = line[idx]
-	return ret
-
 def formatLine(col, line):
 	# Return line formatted for writing to outfile
 	row = []
 	if len(line) >= col.Max and line[col.Species].upper() != "NA":
-		row.append(checkSex(subsetLine(col.Sex, line)))
-		row.append(checkAge(subsetLine(col.Age, line)))
-		row.append(getBinary(subsetLine(col.Castrated, line)))
-		row.append(subsetLine(col.ID, line))
+		row.append(checkSex(col.Sex, line))
+		row.append(checkAge(col.Age, line))
+		row.append(getBinary(col.Castrated, line))
+		row.append(checkID(col.ID, line))
 		row.append(subsetLine(col.Species, line))
 		row.append(subsetLine(col.Date, line))
 		row.append(subsetLine(col.Comments, line))
@@ -58,12 +70,12 @@ def formatLine(col, line):
 			row.append("1")
 		else:
 			row.append("0")
-		row.append(getBinary(subsetLine(col.Necropsy, line)))
-		row.append(getBinary(subsetLine(col.Metastasis, line)))
+		row.append(getBinary(col.Necropsy, line))
+		row.append(getBinary(col.Metastasis, line))
 		row.append(subsetLine(col.Type, line))
 		row.append(subsetLine(col.Location, line))
-		row.append(getBinary(subsetLine(col.Primary, line)))
-		row.append(getBinary(subsetLine(col.Malignant, line)))
+		row.append(getBinary(col.Primary, line))
+		row.append(getBinary(col.Malignant, line))
 		row.append(col.Service)
 		row.append(subsetLine(col.Account, line))
 		row.append(subsetLine(col.Submitter, line))
