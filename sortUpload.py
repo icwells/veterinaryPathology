@@ -24,7 +24,8 @@ def getBinary(idx, line):
 def checkAge(idx, line):
 	# Returns -1 if age is na
 	age = subsetLine(idx, line)
-	if age.upper() == "NA":
+	if age.upper() == "NA" or len(age) > 7:
+		# Return -1 if age is too long (age would be impossible)
 		return "-1"
 	else:
 		try:
