@@ -24,14 +24,33 @@ def writeRecords(outfile, records):
 				cancerage = records[i]["cancerAge"]/records[i]["cancertotal"]
 			else:
 				cancerage = 0.0
-			sex = records[i]["male"]/records[i]["female"]
+			if records[i]["male"] == 0:
+				sex = records[i]["female"]
+			elif records[i]["female"] == 0:
+				sex = records[i]["male"]
+			else:
+				sex = records[i]["male"]/records[i]["female"]
 			row = ("{},{},{},{:.2%},{:.2f},{:.2f},{:.2f}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, cancerage, sex)
 			out.write(row)
 
-def getSpeciesSummaries(infile, species, col, d):
+def writeEntries(m, outfile, d, sub):
+	# Writes target species entries to file
+	ext = ".txt"
+	if d == ",":
+		ext = ".csv"
+	elif d == "\t":
+		ext = ".tsv"
+	outfile = outfile[:outfile.rfind("/")+1] + ("min{}SpeciesEntries{}").format(m, ext)
+	print("\tWriting entries file...")
+	with open(outfile, "w") as out:
+		for line in sub:
+			out.write(line)	
+
+def getSpeciesSummaries(infile, species, col, d, subset):
 	# Returns dict of species totals, cancer rates, # male/female, etc
 	first = True
 	records = {}
+	sub = []
 	print("\tGetting records...")
 	with open(infile, "r") as f:
 		for line in f:
@@ -59,9 +78,14 @@ def getSpeciesSummaries(infile, species, col, d):
 						records[n]["male"] += 1
 					elif spl[col.Sex].lower().strip() == "female":
 						records[n]["female"] += 1
+					if subset == True:
+						# Keep all target species records
+						sub.append(line)
 			else:
 				first = False
-	return records
+				if subset == True:
+					sub.append(line)
+	return records, sub
 
 def getTargetSpecies(infile, m):
 	# Returns list of species with at least 100 entries
@@ -99,6 +123,8 @@ def main():
 	start = datetime.now()
 	parser = ArgumentParser(
 "This script will extract summary data for species with at least a given number of records.")
+	parser.add_argument("--subset", action = "store_true", default = False,
+help = "Print records from target species to additional file.")
 	parser.add_argument("-m", type = int, default = 100,
 help = "Minimum number of records (default = 100).")
 	parser.add_argument("-i", help = "Path to input file.")
@@ -106,7 +132,9 @@ help = "Minimum number of records (default = 100).")
 	args = parser.parse_args()
 	checkArgs(args)
 	species, col, d = getTargetSpecies(args.i, args.m)
-	records = getSpeciesSummaries(args.i, species, col, d)
+	records, sub = getSpeciesSummaries(args.i, species, col, d, args.subset)
+	if args.subset == True:
+		writeEntries(args.m, args.o, d, sub)
 	writeRecords(args.o, records)
 	printRuntime(start)
 
