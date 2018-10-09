@@ -24,7 +24,7 @@ class Matcher():
 		self.Malignant = re.compile(r"(not )?(malignant|benign)")
 		self.Metastasis = re.compile(r"(no )?(metastatis|mets)")
 		self.Primary = re.compile(r"primary|single|solitary|source")
-		self.Necropsy = re.compile(r"(necropsy|decesed|cause of death)|(biopsy)")
+		self.Necropsy = re.compile(r"(necropsy|decesed|cause of death|autopsy|dissection|euthan)|(biopsy)")
 		self.__setTypes__()
 
 	def __setTypes__(self):
