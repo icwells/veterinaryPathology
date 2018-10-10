@@ -99,7 +99,7 @@ class Matcher():
 		else:
 			return False
 
-	def parseLine(self, line, age, cancer = True):
+	def parseLine(self, line, age, cancer, nec):
 		# Extracts data from line
 		row = []
 		line = line.lower().strip()
@@ -138,7 +138,10 @@ class Matcher():
 			else:
 				row.append("NA")
 		row.append(met)
-		row.append(self.__binaryMatch__(self.Necropsy, line, "biopsy"))
+		if nec == True:
+			row.append("Y")
+		else:
+			row.append(self.__binaryMatch__(self.Necropsy, line, "biopsy"))
 		return row
 
 #-----------------------------------------------------------------------------
@@ -186,13 +189,17 @@ def getDescription(infile, outfile, c):
 							row = " ".join(row)
 							# Skip entries with missing data
 							if row != "NA":
-								if col.Service == "NWZP" and "8" not in splt[col.Code]:
-									res = matcher.parseLine(row, age, False)
-								else:
-									res = matcher.parseLine(row, age, True)
+								cancer = True
+								nec = False
+								if col.Service == "NWZP":
+									if "8" not in splt[col.Code]:
+										cancer = False	
+									if "14" in splt[col.Code]:
+										nec = True
+								res = matcher.parseLine(row, age, cancer, nec)
 								if res.count("NA") < len(res):
 									found += 1
-									output.write(("{},{}\n").format(ID, ",".join(row)))
+									output.write(("{},{}\n").format(ID, ",".join(res)))
 									if res.count("NA") == 0:
 										complete += 1
 				else:

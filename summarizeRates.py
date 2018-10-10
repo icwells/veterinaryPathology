@@ -1,116 +1,185 @@
-'''This script will extract summary data for species  at least a given number o records'''
+'''This script will extract summary data for species with at least a given number of records'''
 
 from argparse import ArgumentParser
 from datetime import datetime
+from records import *
 from unixpath import *
 from vetPathUtils import *
+	
+class Total():
+	# Stores and calculates summary data
+	def __init__(self):
+		self.total = 0
+		self.cancer = 0
+		self.male = 0
+		self.female = 0
+		self.age = 0
+		self.agetotal = 0
+		self.cancerage = 0
+		self.cancertotal = 0
+		self.malecancer = 0
+		self.femalecancer = 0
 
-def recordEntry():
-	# Returns new entry for record dict
-	return {"total":0, "cancer":0, "male":0, "female":0, "age":0.0, "agetotal":0, "cancerAge":0.0, "cancertotal":0}
+	def __str__(self):
+		# Calculates rates and returns string
+		rate = self.cancer/self.total
+		if self.agetotal > 0:
+			age = self.age/self.agetotal
+		else:
+			age = 0.0
+		if self.cancertotal > 0:
+			cancerage = self.cancerage/self.cancertotal
+		else:
+			cancerage = 0.0
+		return ("{},{},{:.2%},{:.2f},{:.2f},{},{},{},{}").format(self.total, self.cancer, rate, age, cancerage, self.male, self.female, self.malecancer, self.femalecancer)
 
-def writeRecords(outfile, records):
-	# Writes dict to file
-	print("\tWriting records to file...")
-	with open(outfile, "w") as out:
-		out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),AvgAgeCancer(months),Male:Female\n")
-		for i in records.keys():
-			rate = records[i]["cancer"]/records[i]["total"]
-			if records[i]["agetotal"] > 0:
-				age = records[i]["age"]/records[i]["agetotal"]
-			else:
-				age = 0.0
-			if records[i]["cancertotal"] > 0:
-				cancerage = records[i]["cancerAge"]/records[i]["cancertotal"]
-			else:
-				cancerage = 0.0
-			if records[i]["male"] == 0:
-				sex = records[i]["female"]
-			elif records[i]["female"] == 0:
-				sex = records[i]["male"]
-			else:
-				sex = records[i]["male"]/records[i]["female"]
-			row = ("{},{},{},{:.2%},{:.2f},{:.2f},{:.2f}\n").format(i, records[i]["total"], records[i]["cancer"], rate, age, cancerage, sex)
-			out.write(row)
+	def add(self, age, cancer, sex):
+		# Update total, cancer rate, age, and sex
+		self.total += 1
+		sex = sex.lower().strip()
+		if sex == "male":
+			self.male += 1
+		elif sex == "female":
+			self.female += 1
+		try:
+			self.age += float(age)
+			self.agetotal += 1
+		except ValueError:
+			pass
+		if cancer == True:
+			self.cancer += 1					
+			try:
+				self.cancerage += float(age)
+				self.cancertotal += 1
+			except ValueError:
+				pass
+			if sex == "male":
+				self.malecancer += 1
+			elif sex == "female":
+				self.femalecancer += 1
 
-def writeEntries(m, outfile, d, sub):
-	# Writes target species entries to file
-	ext = ".txt"
-	if d == ",":
-		ext = ".csv"
-	elif d == "\t":
-		ext = ".tsv"
-	outfile = outfile[:outfile.rfind("/")+1] + ("min{}SpeciesEntries{}").format(m, ext)
-	print("\tWriting entries file...")
-	with open(outfile, "w") as out:
-		for line in sub:
-			out.write(line)	
+#-----------------------------------------------------------------------------
 
-def getSpeciesSummaries(infile, species, col, d, subset):
-	# Returns dict of species totals, cancer rates, # male/female, etc
-	first = True
-	records = {}
-	sub = []
-	print("\tGetting records...")
-	with open(infile, "r") as f:
-		for line in f:
-			if first == False:
-				spl = line.strip().split(d)
-				n = spl[col.Species]
-				if n in species:
-					if n not in records.keys():
-						records[n] = recordEntry()
-					# Update total, cancer rate, age, and sex
-					records[n]["total"] += 1
-					try:
-						records[n]["age"] += float(spl[col.Age])
-						records[n]["agetotal"] += 1
-					except ValueError:
-						pass
-					if "8" in spl[col.Code]:
-						records[n]["cancer"] += 1					
-						try:
-							records[n]["cancerAge"] += float(spl[col.Age])
-							records[n]["cancertotal"] += 1
-						except ValueError:
-							pass
-					if spl[col.Sex].lower().strip() == "male":
-						records[n]["male"] += 1
-					elif spl[col.Sex].lower().strip() == "female":
-						records[n]["female"] += 1
-					if subset == True:
-						# Keep all target species records
-						sub.append(line)
-			else:
-				first = False
-				if subset == True:
-					sub.append(line)
-	return records, sub
+class Counter():
+	
+	def __init__(self, m, infile, outfile, subset):
+		self.min = m
+		self.infile = infile
+		self.outfile = outfile
+		self.col = None
+		self.d = ""
+		self.reps = RepeatIdentifier()
+		self.records = {}
+		self.species = []
+		self.subset = subset
+		self.sub = []
 
-def getTargetSpecies(infile, m):
-	# Returns list of species with at least 100 entries
-	totals = {}
-	species = []
-	first = True
-	print("\n\tGetting species totals...")
-	with open(infile, "r") as f:
-		for line in f:
-			if first == False:
-				spl = line.split(d)
-				n = spl[col.Species]
-				# Count number of occurances
-				if n in totals.keys():
-					totals[n] += 1
+	def __parseHeader__(self, line):
+		# Store delimiter and column info
+		self.d = getDelim(line)
+		self.col = Columns(line.split(self.d))
+
+	def __writeEntries__(self):
+		# Writes target species entries to file
+		ext = ".txt"
+		if self.d == ",":
+			ext = ".csv"
+		elif self.d == "\t":
+			ext = ".tsv"
+		outfile = self.outfile[:self.outfile.rfind("/")+1] + ("min{}SpeciesEntries{}").format(self.min, ext)
+		print("\tWriting entries file...")
+		with open(outfile, "w") as out:
+			for line in self.sub:
+				out.write(line)	
+
+	def writeRecords(self):
+		# Writes dict to file
+		if self.subset == True:
+			self.__writeEntries__()
+		print("\tWriting records to file...")
+		with open(self.outfile, "w") as out:
+			out.write("ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),AvgAgeCancer(months),Male,Female,maleCancer,femaleCancer\n")
+			for i in self.records.keys():
+				row = ("{},{}\n").format(i, self.records[i])
+				out.write(row)
+
+	def __updateReplicates__(self):
+		# Adds resolved duplicates to totals and makes sure each record still passes the minimum
+		rm = []
+		for i in self.reps.reps.keys():
+			rec = self.reps.reps[i]
+			if rec.species in self.records.keys():
+				self.records[rec.species].add(rec.age, rec.mass, rec.sex)
+		for i in self.records.keys():
+			if self.records[i].total < self.min:
+				# Delete records which no longer have at least the minimum
+				rm.append(i)
+		for i in rm:
+			del self.records[i]
+		print(("\tRemoved {} duplicate records.").format(len(self.records.keys())-len(rm)))
+
+	def getSpeciesSummaries(self):
+		# Returns dict of species totals, cancer rates, # male/female, etc
+		first = True
+		print("\tGetting records...")
+		with open(self.infile, "r") as f:
+			for line in f:
+				if first == False:
+					spl = line.strip().split(self.d)
+					n = spl[self.col.Species]
+					cancer = False
+					if n in self.species:
+						if n not in self.records.keys():
+							self.records[n] = Total()
+						age = spl[self.col.Age]
+						sex = spl[self.col.Sex]
+						if self.col.Code and "8" in spl[self.col.Code]:
+							cancer = True
+						if self.col.Patient and spl[self.col.Patient] in self.reps.ids:
+							# Sort duplicates and store for later
+							rec = Record(sex, age, spl[self.col.Patient], n, cancer)
+							self.reps.sortReplicates(rec)
+						else:
+							self.records[n].add(age, cancer, sex)
+						if self.subset == True:
+							# Keep all target species records
+							self.sub.append(line)
 				else:
-					totals[n] = 1
-			else:
-				d = getDelim(line)
-				col = Columns(line.split(d))
-				first = False
-	for i in totals.keys():
-		if totals[i] >= m:
-			species.append(i)
-	return species, col, d
+					first = False
+					if self.subset == True:
+						self.sub.append(line)
+		self.__updateReplicates__()
+
+	def setTargetSpecies(self):
+		# Gets list of species with at least min entries and identifies duplicates
+		totals = {}
+		species = []
+		first = True
+		print("\n\tGetting species totals...")
+		with open(self.infile, "r") as f:
+			for line in f:
+				if first == False:
+					spl = line.split(self.d)
+					n = spl[self.col.Species]
+					# Count number of occurances
+					if n not in totals.keys():
+						totals[n] = 0
+					totals[n] += 1
+					# Record names for duplicates
+					if self.col.Account and self.col.Patient:
+						acc = spl[self.col.Account]
+						pat = spl[self.col.Patient]
+						self.reps.add(pat, acc)
+				else:
+					self.__parseHeader__(line)
+					first = False
+		# Identify replicates and target species
+		self.reps.setReplicates()
+		for i in totals.keys():
+			if totals[i] >= self.min:
+				self.species.append(i)
+
+#-----------------------------------------------------------------------------
 
 def checkArgs(args):
 	# Check args for errors
@@ -125,17 +194,16 @@ def main():
 "This script will extract summary data for species with at least a given number of records.")
 	parser.add_argument("--subset", action = "store_true", default = False,
 help = "Print records from target species to additional file.")
-	parser.add_argument("-m", type = int, default = 100,
+	parser.add_argument("-m", type = int, default = 50,
 help = "Minimum number of records (default = 100).")
 	parser.add_argument("-i", help = "Path to input file.")
 	parser.add_argument("-o", help = "Path to output csv.")
 	args = parser.parse_args()
 	checkArgs(args)
-	species, col, d = getTargetSpecies(args.i, args.m)
-	records, sub = getSpeciesSummaries(args.i, species, col, d, args.subset)
-	if args.subset == True:
-		writeEntries(args.m, args.o, d, sub)
-	writeRecords(args.o, records)
+	counter = Counter(args.m, args.i, args.o, args.subset)
+	counter.setTargetSpecies()
+	counter.getSpeciesSummaries()
+	counter.writeRecords()
 	printRuntime(start)
 
 if __name__ == "__main__":

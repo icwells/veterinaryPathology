@@ -27,6 +27,7 @@ class Columns():
 		self.Submitter = None
 		self.Account = None
 		self.Code = None
+		self.Patient = None
 		self.__setColumns__(header)
 
 	def __setColumns__(self, header):
@@ -87,6 +88,9 @@ class Columns():
 				indeces.append(idx)
 			elif i == "Code" or i.replace(" ", "") == "CancerY/N":
 				self.Code = idx
+				indeces.append(idx)
+			elif "Patient" in i or i == "Name":
+				self.Patient = idx
 				indeces.append(idx)
 		self.Max = max(indeces)
 
