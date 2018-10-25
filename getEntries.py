@@ -19,30 +19,43 @@ def getColumn(col, row):
 				return idx
 	printError("Cannot find target column number.")
 
-def findMatch(c, val):
+def findMatch(c, vals):
 	# Identifies whole word matches
-	if c == val:
+	if c in vals:
 		return True
-	else:
+	if len(vals) == 1:
 		# Attwmpt to isolate match
 		s = c.split()
 		for i in s:
-			if i == val:
+			if i == vals[0]:
 				return True
-	return False	
+	return False
+
+def readList(infile):
+	# Returns list of search values
+	vals = []
+	with open(infile, "r") as f:
+		for line in f:
+			s = line.strip().split(",")[0]
+			vals.append(s)
+	return vals
 
 def extractLines(negate, infile, c, val, outfile=None):
 	# Counts unique entries in col
 	first = True
 	total = 0
 	matches = []
+	if os.path.isfile(val):
+		vals = readList(val)
+	else:
+		vals = [val]
 	with open(infile, "r") as f:
 		for line in f:
 			if first == False:
 				total += 1
 				spli = line.split(delim)
 				if len(spli) > col:
-					match = findMatch(spli[col].strip(), val)
+					match = findMatch(spli[col].strip(), vals)
 					if match == True and negate == False:
 						matches.append(line)
 					elif match == False and negate == True:
@@ -56,7 +69,7 @@ def extractLines(negate, infile, c, val, outfile=None):
 		with open(outfile, "w") as out:
 			for i in matches:
 				out.write(i)
-	return len(matches), total
+	return len(matches)-1, total
 
 def countUnique(infile, c):
 	# Counts unique entries in col
@@ -152,7 +165,7 @@ unique entries found in a given column of a file, extract values from a given co
 	parser.add_argument("--negate", action = "store_true", default = False,
 help = "Identify entries that do not equal values.")
 	parser.add_argument("-c", help = "Name or number of column to analyze.")
-	parser.add_argument("-v", help = "Value from column c to extract (leave blank to count).")
+	parser.add_argument("-v", help = "Value (or file with list of values) from column c to extract (leave blank to count).")
 	parser.add_argument("--multiple", action = "store_true", default = False,
 help = "Writes entries with multiple occurances from column c to output file (will append to existing output file).")
 	parser.add_argument("--empty", action = "store_true", default = False,
@@ -172,7 +185,11 @@ help = "Writes entries with no entry in column c to output file (will append to 
 			x, t = getTarget(args.i, args.o, args.c)
 			print(("\n\tIdentified {} entries with missing values from {} total entries.\n").format(x, t))
 	elif args.v:
-		print(("\n\tExtracting entries with column {} equal to {}...").format(args.c, args.v))
+		if os.path.isfile(args.v):
+			msg = "in " + args.v
+		else:
+			msg = "equal to " + args.v
+		print(("\n\tExtracting entries with column {} {}...").format(args.c, msg))
 		x, t = extractLines(args.negate, args.i, args.c, args.v, args.o)
 		print(("\tExtracted {} entries from {} total entries.\n").format(x, t))
 	else:
