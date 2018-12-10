@@ -37,7 +37,7 @@ class Matcher():
 					if splt[0] == "Location":
 						self.Location[splt[1]] = re.compile(splt[2])
 					elif splt[0] == "Type":
-						self.Type[splt[1]] = re.compile(splt[2])
+						self.Type[splt[1]] = [re.compile(splt[2]), splt[3]]
 
 	def __getMatch__(self, query, line, subset = True):
 		# Searches line for regular expression
@@ -99,6 +99,14 @@ class Matcher():
 		else:
 			return False
 
+	def __getMalignancy__(self, line, m):
+		# Attempts to determine if record is malignant or benign
+		if m == "NA":
+			res = self.__binaryMatch__(self.Malignant, line, "benign")
+		else:
+			res = self.Type[m][1]
+		return res
+
 	def parseLine(self, line, age, cancer, nec):
 		# Extracts data from line
 		row = []
@@ -122,12 +130,16 @@ class Matcher():
 			if cancer == True:
 				# Search putative cancer records
 				for i in c.keys():
-					match = self.__getMatch__(c[i], line)
+					if type(c[i]) == list:
+						term = c[i][0]
+					else:
+						term = c[i]
+					match = self.__getMatch__(term, line)
 					if match != "NA":
 						m = i
 						break
 			row.append(m)
-		row.append(self.__binaryMatch__(self.Malignant, line, "benign"))
+		row.append(self.__getMalignancy__(line, m))
 		met = self.__binaryMatch__(self.Metastasis, line)
 		if met == "N" and m != "NA":
 			# Store yes for primary if a tumor was found but no metastasis
