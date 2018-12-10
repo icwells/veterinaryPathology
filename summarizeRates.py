@@ -126,24 +126,25 @@ class Counter():
 			for line in f:
 				if first == False:
 					spl = line.strip().split(self.d)
-					n = spl[self.col.Species]
-					cancer = False
-					if n in self.species:
-						if n not in self.records.keys():
-							self.records[n] = Total()
-						age = spl[self.col.Age]
-						sex = spl[self.col.Sex]
-						if self.col.Code and "8" in spl[self.col.Code]:
-							cancer = True
-						if self.col.Patient and spl[self.col.Patient] in self.reps.ids:
-							# Sort duplicates and store for later
-							rec = Record(sex, age, spl[self.col.Patient], n, cancer)
-							self.reps.sortReplicates(rec)
-						else:
-							self.records[n].add(age, cancer, sex)
-						if self.subset == True:
-							# Keep all target species records
-							self.sub.append(line)
+					if self.col.Max < len(spl):
+						n = spl[self.col.Species]
+						cancer = False
+						if n in self.species:
+							if n not in self.records.keys():
+								self.records[n] = Total()
+							age = spl[self.col.Age]
+							sex = spl[self.col.Sex]
+							if self.col.Code and "8" in spl[self.col.Code]:
+								cancer = True
+							if self.col.Patient and spl[self.col.Patient] in self.reps.ids:
+								# Sort duplicates and store for later
+								rec = Record(sex, age, spl[self.col.Patient], n, cancer)
+								self.reps.sortReplicates(rec)
+							else:
+								self.records[n].add(age, cancer, sex)
+							if self.subset == True:
+								# Keep all target species records
+								self.sub.append(line)
 				else:
 					first = False
 					if self.subset == True:
@@ -166,7 +167,7 @@ class Counter():
 						totals[n] = 0
 					totals[n] += 1
 					# Record names for duplicates
-					if self.col.Account and self.col.Patient:
+					if self.col.Account and self.col.Patient and self.col.Max < len(spl):
 						acc = spl[self.col.Account]
 						pat = spl[self.col.Patient]
 						self.reps.add(pat, acc)

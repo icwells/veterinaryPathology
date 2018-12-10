@@ -191,11 +191,11 @@ help = "Writes entries with no entry in column c to output file (will append to 
 			msg = "equal to " + args.v
 		print(("\n\tExtracting entries with column {} {}...").format(args.c, msg))
 		x, t = extractLines(args.negate, args.i, args.c, args.v, args.o)
-		print(("\tExtracted {} entries from {} total entries.\n").format(x, t))
+		print(("\tExtracted {:,} entries from {:,} total entries.\n").format(x, t))
 	else:
 		print(("\n\tGetting unique entries from column {}...").format(args.c))
 		x, t = countUnique(args.i, args.c)
-		print(("\tFound {} unique entries from {} total entries.\n").format(len(x), t))
+		print(("\tFound {:,} unique entries from {:,} total entries.\n").format(len(x), t))
 
 if __name__ == "__main__":
 	main()
