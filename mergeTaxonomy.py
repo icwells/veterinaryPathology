@@ -9,7 +9,7 @@ BLANKRECORD = ["NA","NA","NA","NA","NA","NA","NA","NA","NA"]
 
 def printTotal(count, total):
 	# Prints number of taxonomies found
-	print(("\tFound taxonomies for {} of {} entries.").format(count, total))
+	print(("\tFound taxonomies for {:,} of {:,} entries.").format(count, total))
 
 def formatRow(c, taxa, line, r):
 	# Formats line from fulldata file
@@ -210,21 +210,9 @@ def checkArgs(args):
 		printError("Please specify a taxonomy file")
 	if not os.path.isfile(args.t):
 		printError(("Cannot find {}").format(args.t))
-	if args.n:
-		if args.m or args.z:
-			printError("Please specify only one input file")
-		if not os.path.isfile(args.n):
-			printError(("Cannot find {}").format(args.n))
-		if args.r and not os.path.isfile(args.r):
-			printError(("Cannot find {}").format(args.r))
-	elif args.m:
-		if args.z:
-			printError("Please specify only one input file")
-		if not os.path.isfile(args.m):
-			printError(("Cannot find {}").format(args.m))
-	elif args.z:
-		if not os.path.isfile(args.z):
-			printError(("Cannot find {}").format(args.z))
+	if not args.i:
+		printError("Please specify an input file")
+	return args
 
 def main():
 	start = datetime.now()
@@ -232,30 +220,27 @@ def main():
 database with Kestrel taxonomy results and diagnosis records.")
 	parser.add_argument("--cancer", action = "store_true", default = False,
 help = "Only extracts and concatenates cancer records (NWZP/DLC only; extracts all records by default).")
-	parser.add_argument("-d", help = "Path to Duke Lemur Center file (utf-8 encoded).")
-	parser.add_argument("-m", help = "Path to MSU file (utf-8 encoded).")
-	parser.add_argument("-n", help = "Path to NWZP file (utf-8 encoded).")
-	parser.add_argument("-z", help = "Path to ZEPS file (utf-8 encoded).")
+	parser.add_argument("-i", help = "Path to utf-8 encoded input file.")
 	parser.add_argument("-t", help = "Path to taxonomy file.")
 	parser.add_argument("-r", default = None,
 help = "Path to records file with age, sex, and cancer type (NWZP only; not required).")
 	parser.add_argument("-o", help = "Output file.")
-	args = parser.parse_args()
-	checkArgs(args)
+	args = checkArgs(parser.parse_args())
+	s = getService(args.i)
 	taxa = getTaxa(args.t)
 	# Check for diagnosis records
 	rec = None
 	if args.r:
 		rec = getRecords(args.r)
-	if args.d:
-		sortDLC(args.cancer, taxa, args.d, args.o)
-	elif args.m:
-		sortMSU(taxa, rec, args.m, args.o)
-	elif args.n:
-		sortNWZP(args.cancer, taxa, rec, args.n, args.o)
-	elif args.z:
-		sortZEPS(taxa, rec, args.z, args.o)
-	print(("\n\tFinished. Runtime: {}\n").format(datetime.now() - start))
+	if s == "DLC":
+		sortDLC(args.cancer, taxa, args.i, args.o)
+	elif s == "MSU":
+		sortMSU(taxa, rec, args.i, args.o)
+	elif s == "NWZP":
+		sortNWZP(args.cancer, taxa, rec, args.i, args.o)
+	elif s == "ZEPS":
+		sortZEPS(taxa, rec, args.i, args.o)
+	printRuntime(start)
 
 if __name__ == "__main__":
 	main()
