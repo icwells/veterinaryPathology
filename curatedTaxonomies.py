@@ -117,8 +117,10 @@ class Queries():
 					if s[0] not in self.queries:
 						if s[2:self.header.species+1].count("NA") <=1:
 							spl = s[self.header.species].split()
-							if 2 <= len(spl) <= 3 and spl[1].strip().lower() != "sp.":
-								# Only use unique entires with no more than one NA and bi/trinomial name present
+							if len(spl) <= 3:
+								# Only use unique entires with no more than one NA
+								if len(spl) >= 2 and spl[1].strip().lower() != "sp.":
+									s[self.header.species] = "NA"
 								self.__addTaxa__(s, "NA")
 				else:
 					# Store header values to use the add method
