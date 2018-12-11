@@ -1,9 +1,11 @@
 '''Merges manually curated taxonomies and prints out kestrel search input file with curator name.'''
 
 import os
+from datetime import datetime
 from argparse import ArgumentParser
 from glob import glob
 from unixpath import *
+from vetPathUtils import printRuntime
 
 class Header():
 	def __init__(self, row):
@@ -90,6 +92,36 @@ class Queries():
 						self.theader = ",".join(row) + "\n"
 					first = False
 
+	def appendCurator(self, infile):
+		# Appends curator names to kestrel taxonomies
+		first = True
+		with open(infile, "r") as f:
+			for line in f:
+				s = line.strip().split(",")
+				if first == False:
+					name = "NA"
+					if s[0] in self.queries.keys():
+						name = self.queries[s[0]]
+					self.__addTaxa__(s, name)
+					self.total += 1
+				else:
+					# Store header values to use the add method
+					self.header = Header(s)
+					self.header.corrected = len(s) + 1
+					first = False
+
+	def getCurators(self):
+		# Gets dict from search term file
+		first = True
+		with open(self.queryout, "r") as f:
+			for line in f:
+				if first == False:
+					s = line.strip().split(",")
+					# Store in queries dict
+					self.queries[s[0]] = s[3]
+				else:
+					first = False
+
 	def writeQueries(self):
 		# Writes queries dict ot file
 		count = 0
@@ -102,12 +134,16 @@ class Queries():
 				count += 1
 		print(("\tIdentified {:,} corrections from {:,} total records.").format(count, self.total))
 
-	def writeTaxa(self):
+	def writeTaxa(self, append = False):
 		# Writes queries dict ot file
 		count = 0
+		mode = "w"
+		if append == True:
+			mode = "a"
 		print(("\tWriting taxonomies to {}").format(self.taxaout))
-		with open(self.taxaout, "w") as out:
-			out.write(self.theader)
+		with open(self.taxaout, mode) as out:
+			if append == False:
+				out.write(self.theader)
 			for i in self.taxonomy.keys():
 				out.write(("{},{}\n").format(i, ",".join(self.taxonomy[i])))
 				count += 1
@@ -124,16 +160,37 @@ def mergeTaxa(indir, outdir):
 	q.writeQueries()
 	q.writeTaxa()
 
+def appendTaxa(infile, outdir):
+	# Appends curator name to ketrel search output and concatenates with original taxonomy
+	q = Queries(outdir)
+	print("\n\tMerging taxonomy data...")
+	q.getCurators()
+	q.appendCurator(infile)
+	q.writeTaxa(True)
+
+def checkArgs(args):
+	# Checks for errors
+	if args.merge == False:
+		args.i = checkDir(args.i)
+	else:
+		checkFile(args.i)
+	args.o = checkDir(args.o, True)
+	return args
+
 def main():
+	start = datetime.now()
 	parser = ArgumentParser(
 "Merges manually curated taxonomies and prints out kestrel search input file with curator name.")
+	parser.add_argument("--merge", action = "store_true", default = False, help = "Merges kestrel output (given with -i)\
+ with curator names from search file and appends to output taxonomy file (directory given with -o).")
 	parser.add_argument("-i", help = "Input directory of csv files (file anmes are assumed to be <name_of_curator>.csv.")
 	parser.add_argument("-o", help = "Path to output directory.")
-	args = parser.parse_args()
-	args.i = checkDir(args.i)
-	args.o = checkDir(args.o, True)
-	mergeTaxa(args.i, args.o)
-	print("\tFinished.\n")
+	args = checkArgs(parser.parse_args())
+	if args.merge == False:
+		mergeTaxa(args.i, args.o)
+	else:
+		appendTaxa(args.i, args.o)
+	printRuntime(start)
 
 if __name__ == "__main__":
 	main()
