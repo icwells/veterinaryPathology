@@ -181,6 +181,7 @@ def getRecords(infile):
 				rec[line[0]] = line[1:]
 			else:
 				first = False
+	print(("\tFound {} diagnosis records.").format(len(rec.keys()))
 	return rec
 
 def getTaxa(infile):
@@ -223,7 +224,7 @@ help = "Only extracts and concatenates cancer records (NWZP/DLC only; extracts a
 	parser.add_argument("-i", help = "Path to utf-8 encoded input file.")
 	parser.add_argument("-t", help = "Path to taxonomy file.")
 	parser.add_argument("-r", default = None,
-help = "Path to records file with age, sex, and cancer type (NWZP only; not required).")
+help = "Path to records file with age, sex, and cancer type (not required).")
 	parser.add_argument("-o", help = "Output file.")
 	args = checkArgs(parser.parse_args())
 	s = getService(args.i)
