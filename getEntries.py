@@ -66,7 +66,7 @@ def extractLines(negate, infile, c, val, outfile=None):
 				matches.append(line)
 				first = False
 	if outfile:
-		with open(outfile, "w") as out:
+		with open(outfile, "a") as out:
 			for i in matches:
 				out.write(i)
 	return len(matches)-1, total
