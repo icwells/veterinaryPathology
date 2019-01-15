@@ -129,7 +129,7 @@ def sortMSU(taxa, rec, infile, outfile):
 								count += 1
 				else:
 					output.write("ID,Date,Owner,Name,Species,Breed,ScientificName,\
-Kingdom,Phylum,Class,Order,Family,Genus,Days,Age(months),Sex,Castrated,Location,Type,\
+Kingdom,Phylum,Class,Order,Family,Genus,Age(months),Sex,Castrated,Location,Type,\
 Malignant,PrimaryTumor,Metastasis,Necropsy,Diagnosis\n")
 					delim = getDelim(line)
 					first = False
@@ -181,7 +181,7 @@ def getRecords(infile):
 				rec[line[0]] = line[1:]
 			else:
 				first = False
-	print(("\tFound {} diagnosis records.").format(len(rec.keys()))
+	print(("\tFound {:,} diagnosis records.").format(len(rec.keys())))
 	return rec
 
 def getTaxa(infile):
@@ -200,7 +200,7 @@ def getTaxa(infile):
 					species.add(line[8])
 			else:
 				first = False
-	print(("\tFound {} taxonomies with {} unique species.").format(len(taxa.keys()), len(species)))
+	print(("\tFound {:,} taxonomies with {:,} unique species.").format(len(taxa.keys()), len(species)))
 	return taxa
 
 def checkArgs(args):
