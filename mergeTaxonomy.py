@@ -184,7 +184,7 @@ def getRecords(infile):
 	print(("\tFound {:,} diagnosis records.").format(len(rec.keys())))
 	return rec
 
-def getTaxa(infile):
+def getTaxa(infile, sci=False):
 	# Reads in taxonomy dictionary
 	first = True
 	taxa = {}
@@ -196,7 +196,12 @@ def getTaxa(infile):
 				line = line.split(",")
 				# Query name: [taxonomy] (drops search term and urls)
 				if len(line) >= 9:
-					taxa[line[0]] = line[2:9]
+					if sci == False:
+						n = line[0]
+					else:
+						# Store scientific names
+						n = line[8]
+					taxa[n] = line[2:9]
 					species.add(line[8])
 			else:
 				first = False
