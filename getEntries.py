@@ -25,9 +25,9 @@ def findMatch(c, vals):
 		return True
 	if len(vals) == 1:
 		# Attwmpt to isolate match
-		s = c.split()
+		s = c.lower().strip().split()
 		for i in s:
-			if i == vals[0]:
+			if i == vals[0].lower():
 				return True
 	return False
 
