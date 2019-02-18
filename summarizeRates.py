@@ -95,20 +95,20 @@ class Counter():
 
 	def writeRecords(self, taxonomies = None):
 		# Writes dict to file
-		header = "ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),AvgAgeCancer(months),Male,Female,maleCancer,femaleCancer"
+		header = "ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),AvgAgeCancer(months),Male,Female,maleCancer,femaleCancer\n"
 		if self.subset == True:
 			self.__writeEntries__()
 		if taxonomies:
-			header += ",Kingdom,Phylum,Class,Order,Family,Genus"
+			header = "Kingdom,Phylum,Class,Order,Family,Genus," + header
 			taxa = getTaxa(taxonomies, True)
 		print("\tWriting records to file...")
 		with open(self.outfile, "w") as out:
-			out.write("{}\n".format(header))
+			out.write(header)
 			for i in self.records.keys():
-				row = ("{},{}").format(i, self.records[i])
+				row = ("{},{}\n").format(i, self.records[i])
 				if taxonomies and i in taxa.keys():
-					row += "," + ",".join(taxa[i][:-1])
-				out.write("{}\n".format(row))
+					row = ",".join(taxa[i][:-1]) + "," + row
+				out.write(row)
 
 	def __updateReplicates__(self):
 		# Adds resolved duplicates to totals and makes sure each record still passes the minimum
