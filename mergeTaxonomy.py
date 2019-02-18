@@ -43,7 +43,7 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 				if first == False:
 					total += 1
 					r = BLANKRECORD
-					line = line.strip().split(",")
+					line = line.replace('"', "").strip().split(",")
 					if len(line) >= 7:
 						if rec:
 							if line[0] in rec.keys():
@@ -72,7 +72,7 @@ def sortZEPS(taxa, rec, infile, outfile):
 				if first == False:
 					total += 1
 					r = BLANKRECORD
-					line = line.strip().split(delim)
+					line = line.replace('"', "").strip().split(delim)
 					if len(line) == 6:
 						if rec:
 							if line[0] in rec.keys():
@@ -111,7 +111,7 @@ def sortMSU(taxa, rec, infile, outfile):
 				if first == False:
 					total += 1
 					r = BLANKRECORD
-					line = line.strip().split(delim)
+					line = line.replace('"', "").strip().split(delim)
 					if len(line) >= 6:
 						if rec:
 							if line[0] in rec.keys():
