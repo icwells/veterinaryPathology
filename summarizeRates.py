@@ -71,6 +71,7 @@ class Counter():
 		self.d = ""
 		self.reps = RepeatIdentifier()
 		self.records = {}
+		self.taxa = {}
 		self.species = []
 		self.subset = subset
 		self.sub = []
@@ -95,19 +96,15 @@ class Counter():
 
 	def writeRecords(self, taxonomies = None):
 		# Writes dict to file
-		header = "ScientificName,TotalRecords,CancerRecords,CancerRate,AverageAge(months),AvgAgeCancer(months),Male,Female,maleCancer,femaleCancer\n"
+		header = "Kingdom,Phylum,Class,Order,Family,Genus,ScientificName,TotalRecords,CancerRecords,"
+		header += "CancerRate,AverageAge(months),AvgAgeCancer(months),Male,Female,maleCancer,femaleCancer\n"
 		if self.subset == True:
 			self.__writeEntries__()
-		if taxonomies:
-			header = "Kingdom,Phylum,Class,Order,Family,Genus," + header
-			taxa = getTaxa(taxonomies, True)
 		print("\tWriting records to file...")
 		with open(self.outfile, "w") as out:
 			out.write(header)
 			for i in self.records.keys():
-				row = ("{},{}\n").format(i, self.records[i])
-				if taxonomies and i in taxa.keys():
-					row = ",".join(taxa[i][:-1]) + "," + row
+				row = ("{},{},{}\n").format(",".join(self.taxa[i]), i, self.records[i])
 				out.write(row)
 
 	def __updateReplicates__(self):
@@ -125,6 +122,12 @@ class Counter():
 			del self.records[i]
 		print(("\tRemoved {} duplicate records.").format(len(self.records.keys())-len(rm)))
 
+	def __getTaxonomy__(self, row):
+		# Stores new taxonomy entries
+		self.taxa[row[self.col.Species]] = []
+		for i in [self.col.Kingdom, self.col.Phylum, self.col.Class, self.col.Order, self.col.Family, self.col.Genus]:
+			self.taxa[row[self.col.Species]].append(row[i])
+
 	def getSpeciesSummaries(self):
 		# Returns dict of species totals, cancer rates, # male/female, etc
 		first = True
@@ -139,6 +142,8 @@ class Counter():
 						if n in self.species:
 							if n not in self.records.keys():
 								self.records[n] = Total()
+							if n not in self.taxa.keys():
+								self.__getTaxonomy__(spl)
 							age = spl[self.col.Age]
 							sex = spl[self.col.Sex]
 							if self.col.Code and "8" in spl[self.col.Code]:
@@ -195,8 +200,6 @@ def checkArgs(args):
 		printError("Please specify input and output files")
 	if not os.path.isfile(args.i):
 		printError(("Cannot find {}").format(args.i))
-	if args.t and not os.path.isfile(args.t):
-		printError(("Cannot find {}").format(args.i))
 
 def main():
 	start = datetime.now()
@@ -206,7 +209,6 @@ def main():
 help = "Print records from target species to additional file.")
 	parser.add_argument("-m", type = int, default = 50,
 help = "Minimum number of records (default = 100).")
-	parser.add_argument("-t", help = "Path to optional taxonomy file.")
 	parser.add_argument("-i", help = "Path to input file.")
 	parser.add_argument("-o", help = "Path to output csv.")
 	args = parser.parse_args()
@@ -214,7 +216,7 @@ help = "Minimum number of records (default = 100).")
 	counter = Counter(args.m, args.i, args.o, args.subset)
 	counter.setTargetSpecies()
 	counter.getSpeciesSummaries()
-	counter.writeRecords(args.t)
+	counter.writeRecords()
 	printRuntime(start)
 
 if __name__ == "__main__":

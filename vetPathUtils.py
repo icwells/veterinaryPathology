@@ -28,6 +28,12 @@ class Columns():
 		self.Account = None
 		self.Code = None
 		self.Patient = None
+		self.Kingdom = None
+		self.Phylum = None
+		self.Class = None
+		self.Order = None
+		self.Family = None
+		self.Genus = None
 		self.__setColumns__(header)
 
 	def __setColumns__(self, header):
@@ -91,6 +97,24 @@ class Columns():
 				indeces.append(idx)
 			elif "Patient" in i or i == "Name":
 				self.Patient = idx
+				indeces.append(idx)
+			elif i == "Kingdom":
+				self.Kingdom = idx
+				indeces.append(idx)
+			elif i == "Phylum":
+				self.Phylum = idx
+				indeces.append(idx)
+			elif i == "Class":
+				self.Class = idx
+				indeces.append(idx)
+			elif i == "Order":
+				self.Order = idx
+				indeces.append(idx)
+			elif i == "Family":
+				self.Family = idx
+				indeces.append(idx)
+			elif i == "Genus":
+				self.Genus = idx
 				indeces.append(idx)
 		self.Max = max(indeces)
 
