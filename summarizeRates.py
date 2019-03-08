@@ -23,6 +23,8 @@ class Total():
 
 	def __str__(self):
 		# Calculates rates and returns string
+		if self.total <= 0:
+			return ""
 		rate = self.cancer/self.total
 		if self.agetotal > 0:
 			age = self.age/self.agetotal
@@ -104,8 +106,10 @@ class Counter():
 		with open(self.outfile, "w") as out:
 			out.write(header)
 			for i in self.records.keys():
-				row = ("{},{},{}\n").format(",".join(self.taxa[i]), i, self.records[i])
-				out.write(row)
+				counts = str(self.records[i])
+				if len(counts) > 0:
+					row = ("{},{},{}\n").format(",".join(self.taxa[i]), i, counts)
+					out.write(row)
 
 	def __updateReplicates__(self):
 		# Adds resolved duplicates to totals and makes sure each record still passes the minimum
