@@ -37,10 +37,11 @@ def addDicts(total, d):
 				total[i]["com"] = ""
 	return total
 
-def mergeOccurances(outfile, nwzp, zeps, msu):
+def mergeOccurances(outfile, dlc, nwzp, zeps, msu):
 	# Compares data found in all databases
 	total = {}
 	print("\n\tComparing all databases...")
+	total = addDicts(total, dlc)
 	total = addDicts(total, nwzp)
 	total = addDicts(total, zeps)
 	total = addDicts(total, msu)
@@ -48,11 +49,11 @@ def mergeOccurances(outfile, nwzp, zeps, msu):
 	countOccurances(total)
 	print("\n\tWriting output...")
 	with open(outfile, "w") as output:
-		output.write("ScientificName,CommonName,Totalcancer,Totalother,Totaltotal,Total%,\
-NWZPcancer,NWZPother,NWZPtotal,NWZP%,ZEPScancer,ZEPSother,ZEPStotal,ZEPS%,MSUcancer,MSUother,MSUtotal,MSU%\n")
+		output.write("ScientificName,CommonName,Totalcancer,Totalother,Totaltotal,Total%,NWZPcancer,NWZPother,NWZPtotal,NWZP%,\
+ZEPScancer,ZEPSother,ZEPStotal,ZEPS%,MSUcancer,MSUother,MSUtotal,MSU%,DLCcancer,DLCother,DLCtotal,DLC%\n")
 		for i in total.keys():
 			o = [i, total[i]["com"], total[i]["c"], total[i]["o"], total[i]["t"], getPercent(total[i]["c"], total[i]["t"])]
-			for d in [nwzp, zeps, msu]:
+			for d in [nwzp, zeps, msu, dlc]:
 				o = extendOutput(o, d, i)
 			string = [str(x) for x in o]
 			output.write(",".join(string) + "\n")
@@ -81,7 +82,7 @@ def getOccurances(infile, diag=False):
 			line = line.strip().split(",")
 			if first == False and len(line) >= name:
 				n = line[name].strip()
-				if n and n.lower() != "na":
+				if n and n.lower().strip() != "na":
 					if "et al" in n.lower() or n.lower()[:2] == "na ":
 						pass
 					else:
@@ -133,7 +134,7 @@ def getZEPSoccurances(infile):
 			if first == False:
 				if len(spli) >= col:
 					n = spli[col]
-					if n != "NA":
+					if n.lower().strip() != "na":
 						other = int(spli[2])-int(spli[1])
 						species[n] = {"c":int(spli[1]), "o":other, "t":int(spli[2])}
 			else:
@@ -144,22 +145,52 @@ def getZEPSoccurances(infile):
 				first = False
 	return species
 
+def getDLCOccurances(infile):
+	# Reads Duke Lemur Center data
+	species = {}
+	first = True
+	with open(infile, "r") as f:
+		for line in f:
+			spli = line.strip().split(",")
+			if first == False:
+				if len(spli) >= cancer:
+					n = spli[name]
+					if n not in species.keys():
+						species[n] = {"c":0, "o":0, "t":0}
+					species[n]["t"] += 1
+					if spli[cancer].strip() == "Yes":
+						species[n]["c"] += 1
+					else:
+						species[n]["o"] += 1
+			else:
+				for idx,i in enumerate(spli):
+					if i.strip() == "ScientificName":
+						name = idx
+					elif i.strip() == "CancerY/N":
+						cancer = idx
+						break
+				first = False
+	return species	
+
 def main():
 	start = datetime.now()
 	parser = ArgumentParser("This script will count the number of cancer \
 occurances per species and per database.")
+	parser.add_argument("-d", help = "Path to DLC file.")
 	parser.add_argument("-n", help = "Path to NWZP file.")
 	parser.add_argument("-m", help = "Path to merged MSU file.")
 	parser.add_argument("-z", help = "Path to ZEPS species count file (with scientific names).")
 	parser.add_argument("-o", help = "Path to output file.")
 	args = parser.parse_args()
+	print("\n\tGetting DLC data...")
+	dlc = getDLCOccurances(args.d)
 	print("\n\tGetting NWZP data...")
 	nwzp = getOccurances(args.n, True)
 	print("\n\tGetting ZEPS data...")
 	zeps = getZEPSoccurances(args.z)
 	print("\n\tGetting MSU data...")
 	msu = getOccurances(args.m)
-	mergeOccurances(args.o, nwzp, zeps, msu)
+	mergeOccurances(args.o, dlc, nwzp, zeps, msu)
 	print(("\tFinished. Runtime: {}\n").format(datetime.now()-start))
 
 if __name__ == "__main__":
