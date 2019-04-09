@@ -202,8 +202,7 @@ def checkArgs(args):
 	# Check args for errors
 	if not args.i or not args.o:
 		printError("Please specify input and output files")
-	if not os.path.isfile(args.i):
-		printError(("Cannot find {}").format(args.i))
+	checkFile(args.i)
 
 def main():
 	start = datetime.now()

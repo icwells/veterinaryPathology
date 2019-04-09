@@ -2,12 +2,13 @@
 
 class Record():
 	# Stores record data
-	def __init__(self, sex, age, ID, species, mass):
-		self.sex =  sex
-		self.age =  age
-		self.id =  ID
+	def __init__(self, sex, age, ID, species, mass, sid = None):
+		self.sex = sex
+		self.age = age
+		self.id = ID
 		self.species = species
 		self.mass = mass
+		self.sourceid = sid
 
 class RepeatIdentifier():
 	# Class for identifying and resolving repeat entries
@@ -32,7 +33,15 @@ class RepeatIdentifier():
 				if self.entries[k][i] > 1:
 					# Store target id
 					self.ids.append(i)
-		print(("\tIdentified {} duplicate records.").format(len(self.ids)))
+		print(("\tIdentified {:,} duplicate records.").format(len(self.ids)))
+
+	def getSourceIDs(self):
+		# Returns list of source IDs from reps
+		ret = []
+		for k in self.reps.keys():
+			if self.reps[k].sourceid is not None:
+				ret.append(self.reps[k].sourceid)
+		return ret
 
 	def sortReplicates(self, rec):
 		# Stores first record or cancer record for each record
