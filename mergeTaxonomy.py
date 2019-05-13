@@ -11,6 +11,14 @@ def printTotal(count, total):
 	# Prints number of taxonomies found
 	print(("\tFound taxonomies for {:,} of {:,} entries.").format(count, total))
 
+def getMass(typ, code):
+	# Returns Y if mass is identified
+	if "8" in code:
+		return "Y"
+	elif typ != "NA":
+		return "Y"
+	return "N"
+
 def formatRow(c, taxa, line, r):
 	# Formats line from fulldata file
 	row = []
@@ -21,11 +29,11 @@ def formatRow(c, taxa, line, r):
 	n = line[6]
 	if n in taxa.keys():
 		# Common and scientific names
+		mass = getMass(r[4], line[8])
 		row = [line[0], n, taxa[n][-1]]
-		for i in taxa[n][:-1]:
-			# Append remainder of taxonomy
-			row.append(i)
-		row.extend(r)
+		# Append remainder of taxonomy and diagnosis
+		row.extend(taxa[n][:-1])
+		row.extend(r[:3] + [mass] + r[3:])
 		# Add remaining data from database
 		row.extend([line[8].replace(",",";"), line[9].replace(",", ";"), line[3], 
 					line[7].replace(",",";"), line[5], line[1], line[2]])
@@ -55,7 +63,7 @@ def sortNWZP(c, taxa, rec, infile, outfile):
 							count += 1
 				else:
 					output.write("ID,CommonName,ScientificName,Kingdom,Phylum,Class,Order,Family,Genus,\
-Age(months),Sex,Castrated,Location,Type,Malignant,PrimaryTumor,Metastasis,Necropsy,\
+Age(months),Sex,Castrated,MassPresent,Location,Type,Malignant,PrimaryTumor,Metastasis,Necropsy,\
 Code,Diagnosis,Case,Patient#,DateRcvd,Client,Account\n")
 					first = False
 	printTotal(count, total)
