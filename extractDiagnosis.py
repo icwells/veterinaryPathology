@@ -81,7 +81,7 @@ class Matcher():
 		# Converts age to months
 		d = int(self.__getMatch__(self.Digit, a))
 		if d == 0:
-			return None
+			return "NA"
 		elif "year" in a:
 			return d*12
 		elif "month" in a:
@@ -111,15 +111,14 @@ class Matcher():
 		# Extracts data from line
 		row = []
 		line = line.lower().strip()
-		if self.__infantRecords__(line) == True:
-			a = 0
-		elif age:
-			a = age
-		else:
+		if not age:
+			age = "NA"
 			a = self.__getMatch__(self.Age, line)
 			if a != "NA":
-				a = self.__ageInMonths__(a)
-		row.append(str(a))
+				age = self.__ageInMonths__(a)
+			if age == "NA" and self.__infantRecords__(line) == True:
+				age = "0"
+		row.append(str(age))
 		row.append(self.__getMatch__(self.Sex, line))
 		cas = self.__binaryMatch__(self.Castrated, line)
 		if cas == "NA" and "intact" in line:
@@ -174,7 +173,6 @@ def getAge(col, row):
 		return ("{:.2f}").format(age/30)
 	if col.Age:
 		return ("{:.2f}").format(age*12)
-	
 
 def getDescription(infile, outfile, c):
 	# Reads input file and writes output to file
