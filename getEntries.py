@@ -71,6 +71,14 @@ def extractLines(negate, infile, c, val, outfile=None):
 				out.write(i)
 	return len(matches)-1, total
 
+def writeUnique(outfile, col, l):
+	# Writes column to file
+	l.sort()
+	with open(outfile, "w") as out:
+		out.write(("{}\n").format(col))
+		for i in l:
+			out.write(("{}\n").format(i))
+
 def countUnique(infile, c):
 	# Counts unique entries in col
 	x = set()
@@ -196,6 +204,8 @@ help = "Writes entries with no entry in column c to output file (will append to 
 		print(("\n\tGetting unique entries from column {}...").format(args.c))
 		x, t = countUnique(args.i, args.c)
 		print(("\tFound {:,} unique entries from {:,} total entries.\n").format(len(x), t))
+		if args.o:
+			writeUnique(args.o, args.c, list(x))
 
 if __name__ == "__main__":
 	main()
