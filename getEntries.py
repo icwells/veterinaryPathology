@@ -77,7 +77,7 @@ def writeUnique(outfile, col, l):
 	with open(outfile, "w") as out:
 		out.write(("{}\n").format(col))
 		for i in l:
-			out.write(("{}\n").format(i))
+			out.write(("{}\n").format(i.strip()))
 
 def countUnique(infile, c):
 	# Counts unique entries in col
