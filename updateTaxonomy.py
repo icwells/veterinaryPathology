@@ -59,6 +59,7 @@ class TaxaUpdater():
 						else:
 							dlt += 1
 					else:
+						out.write(line)
 						d = getDelim(line.strip())
 						first = False
 			for i in self.new.keys():
