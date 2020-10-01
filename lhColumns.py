@@ -122,6 +122,7 @@ self.LRate, self.ILI, self.Bweight, self.Wweight, self.Aweight, self.Grate, self
 
 	def __literAtmoToW__(self, v):
 		# Converts liters of atmosphere/min to watts
+		# kylesconverter.com/power/watts-to-litres--atmosphere-per-minute
 		v = float(v)
 		return str(v*1.68875)
 
