@@ -33,10 +33,13 @@ class LHcolumns():
 		elif "(mo)" in i or "_m" in i:
 			return "m"
 		elif "yrs" in i or "_y" in i:
-			return "y"	
+			return "y"
+		elif "Inter-litter/" in i:
+			# Assign days to anage interbirth interval
+			return "d"
 		elif self.Source == "Barton":
 			# Return months for Barton gestation
-			return "m"	
+			return "m"
 
 	def __setColumns__(self, header):
 		indeces = []
