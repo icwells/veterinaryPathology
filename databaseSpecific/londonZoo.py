@@ -18,7 +18,7 @@ class LondonZoo():
 		self.infile = args.i
 		self.months = re.compile("{}\s?(m|mnths|month)".format(digits))
 		self.outfile = join(split(self.infile)[0], "LondonZoo.Preformatted.csv")
-		self.outheader = "CommonName,ScientificName,AgeCategory,Age,Sex,Date,Year,Comments,Account\n"
+		self.outheader = "ID,CommonName,ScientificName,Age,Sex,Date,Year,Comments,Account\n"
 		self.total = 0
 		self.years = re.compile("{}\s?(y|year)".format(digits))
 
@@ -126,6 +126,8 @@ class LondonZoo():
 	def __formatLine__(self, line):
 		# Parses and formats individual line
 		ret = []
+		self.count += 1
+		ret.append(str(self.count))
 		ret.append(line[self.header["Common Name"]].strip())
 		ret.append(line[self.header["Scientific name"]].strip())
 		ret.append(self.__setAge__(line))
