@@ -10,22 +10,42 @@ from unixpath import readFile
 class LondonZoo():
 
 	def __init__(self, args):
+		digits = "([0-9]+[.]?([0-9]+))"
 		self.count = 0
-		self.days = re.compile("([0-9])+\s?(d|day)")
+		self.digits = re.compile(digits)
+		self.days = re.compile("{}\s?(d|day)".format(digits))
 		self.header = None
 		self.infile = args.i
-		self.months = re.compile("([0-9]+)\s?(m|mnths|month)")
-		self.outfile = join(split(self.infile)[0] + "LondonZoo.Preformatted.csv")
+		self.months = re.compile("{}\s?(m|mnths|month)".format(digits))
+		self.outfile = join(split(self.infile)[0], "LondonZoo.Preformatted.csv")
 		self.outheader = "CommonName,ScientificName,AgeCategory,Age,Sex,Date,Year,Comments,Account\n"
 		self.total = 0
-		self.years = re.compile("([0-9]+)\s?(y|year)")
+		self.years = re.compile("{}\s?(y|year)".format(digits))
+
+	def __removePunctuation__(self, val):
+		# Removes leading punctuation marks
+		if val and val[0] in punctuation:
+			val = val[1:]
+		return val
+
+	def __setAccount__(self, line):
+		# Stores account numbers
+		ret = line[2].strip()
+		acc = line[self.header["Code"]].strip()
+		if "/" not in acc and "-" not in acc:
+			ret = "{}-{}".format(ret, acc)
+		return ret
 
 	def __setWeight__(self, line):
 		# Converts kg to grams
-		ret = line[self.header["Wt - g"]].strip()
-		kg = line[self.header["Wt - kg"]].strip()
-		if len(ret) < 1 and len(kg) > 0:
-			ret = str(float(kg) * 1000)
+		ret = ""
+		g = self.digits.search(line[self.header["Wt - g"]])
+		if g:
+			ret = g.group(0)
+		else:
+			kg = self.digits.search(line[self.header["Wt - kg"]])
+			if kg:
+				ret = str(float(kg.group(0)) * 1000)
 		return ret
 
 	def __setAgeCategory__(self, line):
@@ -72,25 +92,25 @@ class LondonZoo():
 
 	def __setAge__(self, line):
 		# Converts age to months
-		ret = 0
+		ret = ""
 		age = line[self.header["Age (y.m)"]].lower().strip()
 		if not age:
 			age = line[self.header["Age Cat"]].lower().strip()
 		if age:
 			age = age.replace(";", "")
+			val = 0
 			for idx, i in enumerate([self.years, self.months, self.days]):
 				match = i.search(age)
 				if match:
-					d = match.group(1)
-					if d[0] in punctuation:
-						d = d[1:]
+					d = self.__removePunctuation__(match.group(1))
 					d = float(d)
 					if i == 0:
-						ret += d * 12
+						val += d * 12
 					elif i == 1:
-						ret += d
+						val += d
 					else:
-						ret += d / 30
+						val += d / 30
+			ret = str(val)
 		return str(ret)
 
 	def __setSex__(self, line):
@@ -108,12 +128,12 @@ class LondonZoo():
 		ret = []
 		ret.append(line[self.header["Common Name"]].strip())
 		ret.append(line[self.header["Scientific name"]].strip())
-		ret.append(self.__setAgeCategory__(line))
 		ret.append(self.__setAge__(line))
 		ret.append(self.__setSex__(line))
 		ret.append(line[self.header["PM/Dth Date"]].strip())
 		ret.append(line[self.header["Year"]].strip())
 		ret.append(self.__setComments__(line))
+		ret.append(self.__setAccount__(line))
 		return ret
 
 	def format(self):
