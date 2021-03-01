@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from glob import glob
 import os
-import pandas
+import xlrd
 import unixpath
 
 class SpeciesTotals():
@@ -43,8 +43,8 @@ class SpeciesTotals():
 		# Iterates over population directory
 		print("\tReading species from population files...")
 		for i in glob(os.path.join(self.indir, "*/*.xls")):
-			df = pandas.read_excel(i)
-			for line in df.iterrows():
+			df = xlrd.open_workbook(i)
+			'''for line in df.iterrows():
 				count = 0
 				for i in ["DeathsMale", "DeathsFemale", "DeathsOther"]:
 					try:
@@ -52,7 +52,7 @@ class SpeciesTotals():
 					except:
 						pass
 				if count > 0:
-					self.__addSpecies__(line["PreferredScientificName"], count)
+					self.__addSpecies__(line["PreferredScientificName"], count)'''
 
 	def __write__(self):
 		# Writes dict to file
