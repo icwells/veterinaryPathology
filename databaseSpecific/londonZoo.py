@@ -41,11 +41,11 @@ class LondonZoo():
 		ret = ""
 		g = self.digits.search(line[self.header["Wt - g"]])
 		if g:
-			ret = g.group(0)
+			ret = g.group(0) + " g"
 		else:
 			kg = self.digits.search(line[self.header["Wt - kg"]])
 			if kg:
-				ret = str(float(kg.group(0)) * 1000)
+				ret = str(float(kg.group(0)) * 1000) + " g"
 		return ret
 
 	def __setAgeCategory__(self, line):
@@ -104,8 +104,10 @@ class LondonZoo():
 				if match:
 					d = self.__removePunctuation__(match.group(1))
 					d = float(d)
-					if i == 0:
+					if idx == 0:
+						print(val, d)
 						val += d * 12
+						print(val)
 					elif i == 1:
 						val += d
 					else:
@@ -123,13 +125,22 @@ class LondonZoo():
 			ret = "female"
 		return ret
 
+	def __checkSpecies__(self, line):
+		# Removes vague terms from species names
+		name = line[self.header["Scientific name"]].strip()
+		sp = name.split()
+		if len(sp) > 1:
+			if sp[1] == "sp" or sp[1] == "sp." or sp[1] == "spp":
+				name = sp[0]
+		return name
+
 	def __formatLine__(self, line):
 		# Parses and formats individual line
 		ret = []
 		self.count += 1
 		ret.append(str(self.count))
 		ret.append(line[self.header["Common Name"]].strip())
-		ret.append(line[self.header["Scientific name"]].strip())
+		ret.append(self.__checkSpecies__(line))
 		ret.append(self.__setAge__(line))
 		ret.append(self.__setSex__(line))
 		ret.append(line[self.header["PM/Dth Date"]].strip())
