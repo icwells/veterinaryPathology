@@ -1,24 +1,26 @@
 '''Preformats London Zoo data before parsing by compOncDB.'''
 
-from ageFinder import AgeFinder
 from argparse import ArgumentParser
 from datetime import datetime
 from os.path import split, join
 import re
+from string import punctuation
 from unixpath import readFile
 
 class LondonZoo():
 
 	def __init__(self, args):
 		digits = "([0-9]+[.]?([0-9]+))"
-		self.ages = AgeFinder(digits)
+		self.days = re.compile(r"([0-9]+)\s?(d|day)")
 		self.count = 0
 		self.digits = re.compile(digits)
 		self.header = None
 		self.infile = args.i
+		self.months = re.compile(r"([0-9]+)\s?(m|mnths|month)")
 		self.outfile = join(split(self.infile)[0], "LondonZoo.Preformatted.csv")
 		self.outheader = "ID,CommonName,ScientificName,Age,Sex,Date,Year,Comments,Account\n"
 		self.total = 0
+		self.years = re.compile("{}\s?(y|yrs|year)".format(digits))
 
 	def __setAccount__(self, line):
 		# Stores account numbers
@@ -82,13 +84,33 @@ class LondonZoo():
 				ret += val
 		return ret.strip()
 
+#-----------------------------------------------------------------------------
+
+	def __removePunctuation__(self, val):
+		# Removes leading punctuation marks
+		if val and val[0] in punctuation:
+			val = val[1:]
+		return float(val)
+
+	def __getMatch__(self, term, age):
+		# Returns regex match
+		match = term.search(age)
+		if match:
+			return self.__removePunctuation__(match.group(1))
+		return 0.0
+
 	def __setAge__(self, line):
 		# Converts age to months
 		age = line[self.header["Age (y.m)"]].lower().strip()
 		#if not age:
 		#	age = line[self.header["Age Cat"]].lower().strip()
 		if age:
-			return self.ages.getAge(age)
+			age = age.replace(";", "")
+			ret = self.__getMatch__(self.years, age) * 12
+			ret += self.__getMatch__(self.months, age)
+			ret += self.__getMatch__(self.days, age) / 30
+			if ret > 0:
+				return str(ret)
 		return ""
 
 	def __setSex__(self, line):
