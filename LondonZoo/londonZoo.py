@@ -106,9 +106,9 @@ class LondonZoo():
 		#	age = line[self.header["Age Cat"]].lower().strip()
 		if age:
 			age = age.replace(";", "")
-			ret = self.__getMatch__(self.years, age) * 12
-			ret += self.__getMatch__(self.months, age)
-			ret += self.__getMatch__(self.days, age) / 30
+			ret = self.__getMatch__(self.years, age)
+			ret += self.__getMatch__(self.months, age) / 12
+			ret += self.__getMatch__(self.days, age) / 365
 			if ret > 0:
 				return str(ret)
 		return ""
