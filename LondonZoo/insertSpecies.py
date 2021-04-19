@@ -2,7 +2,6 @@
 
 from argparse import ArgumentParser
 from datetime import datetime
-import os
 import unixpath
 
 class Species():
